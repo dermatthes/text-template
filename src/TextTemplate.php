@@ -42,7 +42,7 @@ class TextTemplate {
         "comEndTag" => "}"
     ];
 
-    public function __construct ($text) {
+    public function __construct ($text="") {
         $this->mTemplateText = $text;
         $this->mFilter["_DEFAULT_"] = function ($input) { return htmlspecialchars($input); };
         $this->mFilter["raw"] = function ($input) { return html_entity_decode($input); };
@@ -56,6 +56,68 @@ class TextTemplate {
     public function addFilter ($filterName, callable $filterFn) {
         $this->mFilter[$filterName] = $filterFn;
         return $this;
+    }
+
+
+    /**
+     * Tag-Nesting is done by initially adding an index to both the opening and the
+     * closing tag. (By the way some cleanup is done)
+     *
+     * Example
+     *
+     * {if xyz}
+     * {/if}
+     *
+     * Becomes:
+     *
+     * {if0 xyz}
+     * {/if0}
+     *
+     * This trick makes it possible to add tag nesting functionality
+     *
+     *
+     * @param $input
+     * @return mixed
+     */
+    public function _replaceNestingLevels ($input) {
+        $indexCounter = 0;
+        $nestingIndex = [];
+
+        $lines = explode("\n", $input);
+        for ($li=0; $li < count ($lines); $li++) {
+            $lines[$li] = preg_replace_callback('/\{(?!=)\s*(\/?)\s*([a-z]+)(.*?)\}/im',
+                function ($matches) use (&$nestingIndex, &$indexCounter, &$li) {
+                    $slash = $matches[1];
+                    $tag = $matches[2];
+                    $rest = $matches[3];
+                    if ($slash == "") {
+                        if ( ! isset ($nestingIndex[$tag]))
+                            $nestingIndex[$tag] = [];
+                        $nestingIndex[$tag][] = [$indexCounter, $li];
+                        $out =  "{" . $tag . $indexCounter . rtrim($rest) . "}";
+                        $indexCounter++;
+
+                        return $out;
+                    } else if ($slash == "/") {
+                        if ( ! isset ($nestingIndex[$tag]))
+                            throw new Exception("Line {$li}: Opening tag not found for closing tag: '{$matches[0]}'");
+                        if (count ($nestingIndex[$tag]) == 0)
+                            throw new Exception("Line {$li}: Nesting level does not match for closing tag: '{$matches[0]}'");
+                        $curIndex = array_pop($nestingIndex[$tag]);
+                        return "{/" . $tag . $curIndex[0] . "}";
+                    } else {
+                        throw new Exception("Line {$li}: This exception should not appear!");
+                    }
+                },
+                $lines[$li]
+            );
+
+        }
+        foreach ($nestingIndex as $tag => $curNestingIndex) {
+            if (count ($curNestingIndex) > 0)
+                throw new Exception("Unclosed tag '{$tag}' opened in line {$curNestingIndex[0][1]} ");
+        }
+        return implode ("\n", $lines);
     }
 
 
@@ -96,15 +158,17 @@ class TextTemplate {
 
 
     private function _parseTags ($context, $block, $softFail=TRUE) {
-        $result = preg_replace_callback ("/\\{\\{.+?)\\}\\}/im",
+        $result = preg_replace_callback ("/\\{=(.+?)\\}/im",
             function ($_matches) use ($softFail, $context) {
                 $match = $_matches[1];
 
                 $chain = explode("|", $match);
                 $chain[] = "_DEFAULT_";
 
-                $varName = array_shift($chain);
+                $varName = trim (array_shift($chain));
                 $value = $this->_getValueByName($context, $varName, $softFail);
+
+                echo "value $varName: " . $value;
 
                 foreach ($chain as $curName) {
                     if ( ! isset ($this->mFilter[$curName]))
@@ -200,11 +264,12 @@ class TextTemplate {
 
 
     private function _parseBlock ($context, $block, $softFail=TRUE) {
-        $result = preg_replace_callback('/\n?\{([a-z]+)(.*?)\}(.*?)\n?\{\/\1\}\n?/ism',
+        // (?!\{): Lookahead Regex: Don't touch double {{
+        $result = preg_replace_callback('/\n?\{(?!=)(([a-z]+)[0-9]+)(.*?)\}(.*?)\n?\{\/\1\}\n?/ism',
             function ($matches) use ($context, $softFail) {
-                $command = $matches[1];
-                $cmdParam = $matches[2];
-                $content = $matches[3];
+                $command = $matches[2];
+                $cmdParam = $matches[3];
+                $content = $matches[4];
 
                 switch ($command) {
                     case "for":
@@ -241,6 +306,8 @@ class TextTemplate {
         $text = $this->mTemplateText;
 
         $context = $params;
+
+        $text = $this->_replaceNestingLevels($text);
 
         $text = $this->_parseBlock($context, $text, $softFail);
         $result = $this->_parseTags($context, $text, $softFail);
