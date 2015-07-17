@@ -7,10 +7,30 @@
 class TextTemplate {
 
     private $mTemplateText;
+    private $mFilter = [];
+    private $mConf = [
+        "varStartTag" => "{{",
+        "varEndTag" => "}}",
+        "comStartTag" => "{",
+        "comEndTag" => "}"
+    ];
 
     public function __construct ($text) {
         $this->mTemplateText = $text;
+        $this->mFilter["_DEFAULT_"] = function ($input) { return htmlspecialchars($input); };
+        $this->mFilter["raw"] = function ($input) { return html_entity_decode($input); };
     }
+
+    /**
+     * @param $filterName
+     * @param callable $filterFn
+     * @return $this
+     */
+    public function addFilter ($filterName, callable $filterFn) {
+        $this->mFilter[$filterName] = $filterFn;
+        return $this;
+    }
+
 
 
     private function _getValueByName ($context, $name, $softFail=TRUE) {
@@ -49,22 +69,24 @@ class TextTemplate {
 
 
     private function _parseTags ($context, $block, $softFail=TRUE) {
-        $result = preg_replace_callback ("/\\$?\\{([!]{0,1}[A-Za-z0-9\\.\\_\\@]+)\\}/im",
+        $result = preg_replace_callback ("/\\{\\{.+?)\\}\\}/im",
             function ($_matches) use ($softFail, $context) {
                 $match = $_matches[1];
-                $_skipEscaping = FALSE;
-                if (substr($match, 0, 1) == "!") {
-                    // Disable HTML Escaping
-                    $_skipEscaping = TRUE;
-                    $match = substr ($match, 1);
+
+                $chain = explode("|", $match);
+                $chain[] = "_DEFAULT_";
+
+                $varName = array_shift($chain);
+                $value = $this->_getValueByName($context, $varName, $softFail);
+
+                foreach ($chain as $curName) {
+                    if ( ! isset ($this->mFilter[$curName]))
+                        throw new Exception("Filter '$curName' not defined");
+                    $fn = $this->mFilter[$curName];
+                    $value = $fn($value);
                 }
 
-                $value = $this->_getValueByName($context, $match, $softFail);
-
-                if ($_skipEscaping) {
-                    return $value;
-                }
-                return htmlspecialchars($value);
+                return $value;
             }, $block);
         return $result;
     }
@@ -169,6 +191,16 @@ class TextTemplate {
                 }
             }, $block);
         return $result;
+    }
+
+
+    /**
+     * @param $template
+     * @return $this
+     */
+    public function loadTemplate ($template) {
+        $this->mTemplateText = $template;
+        return $this;
     }
 
 
