@@ -238,9 +238,7 @@ class TextTemplate {
      * @return string
      */
     public function apply ($params, $softFail=TRUE) {
-
         $text = $this->mTemplateText;
-        $text = str_replace("\n\r", "\n", $text);
 
         $context = $params;
 
