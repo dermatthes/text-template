@@ -1,7 +1,11 @@
 # Text-Template
 Single-Class PHP5 template engine with support for if/loops/filters
- 
-# Basic Example
+
+It is aimed to be a small Template-Engine to meet e-Mailing or small html-Template demands.
+
+TextTemplate uses Regular-Expressions for text-Parsing.
+
+## Basic Example
 ```php
 $tplStr = <<<EOT
 Welcome {user.name | capitalize},
@@ -29,4 +33,12 @@ $data = [
 $tt = new TextTemplate($tplStr);
 echo $tt->apply ($data);
 ```
+
+## Limitations
+
+Text-Template cannot handle nested if or loops. This limitation will be eliminated with in 
+the next days.
+
+The logic-Expression-Parser won't handle logic connections (OR / AND).
+
 
