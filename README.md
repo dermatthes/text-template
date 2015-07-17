@@ -9,26 +9,14 @@ be a secure solution to use in no time-critical situations.
 ## Basic Example
 ```php
 $tplStr = <<<EOT
-Welcome {user.name | capitalize},
-
-{if isLoggedIn == TRUE}
-You are logged in.
-Your last logins:
-{for curLoginDate in lastLogins}
-Login on {curLoginDate}
-{/for}
+Hello World {{ name }}
+{if name == "Matthias"}
+Hallo {{ name | capitalize }}
 {/if}
 EOT;
 
 $data = [
-    "user" => [
-        "name" => "Matthias"
-    ],
-    "isLoggedIn" => TRUE,
-    "lastLogins" => [
-        "2015-01-15",
-        "2015-02-17"
-    ]
+    "name" => "Matthias"
 ];
 
 $tt = new TextTemplate($tplStr);
