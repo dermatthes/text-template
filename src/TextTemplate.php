@@ -36,8 +36,8 @@ class TextTemplate {
     private $mTemplateText;
     private $mFilter = [];
     private $mConf = [
-        "varStartTag" => "{{",
-        "varEndTag" => "}}",
+        "varStartTag" => "{=",
+        "varEndTag" => "}",
         "comStartTag" => "{",
         "comEndTag" => "}"
     ];
@@ -45,10 +45,23 @@ class TextTemplate {
     public function __construct ($text="") {
         $this->mTemplateText = $text;
         $this->mFilter["_DEFAULT_"] = function ($input) { return htmlspecialchars($input); };
-        $this->mFilter["raw"] = function ($input) { return html_entity_decode($input); };
+
+        // Raw is only a pseudo-filter. If it is not in the chain of filters, __DEFAULT__ will be appended to the filter
+        $this->mFilter["raw"] = function ($input) { return $input; };
     }
 
     /**
+     * Add a user-defined filter function to the list of available filters.
+     *
+     * A filter function must accept at least one parameter: input and return the resulting
+     * value.
+     *
+     * Example:
+     *
+     * addFilter("currency", function (input) {
+     *      return number_format ($input, 2, ",", ".");
+     * });
+     *
      * @param $filterName
      * @param callable $filterFn
      * @return $this
@@ -78,6 +91,7 @@ class TextTemplate {
      *
      * @param $input
      * @return mixed
+     * @throws Exception
      */
     public function _replaceNestingLevels ($input) {
         $indexCounter = 0;
@@ -157,18 +171,20 @@ class TextTemplate {
 
 
 
-    private function _parseTags ($context, $block, $softFail=TRUE) {
+    private function _parseValueOfTags ($context, $block, $softFail=TRUE) {
         $result = preg_replace_callback ("/\\{=(.+?)\\}/im",
             function ($_matches) use ($softFail, $context) {
                 $match = $_matches[1];
 
                 $chain = explode("|", $match);
-                $chain[] = "_DEFAULT_";
+                for ($i=0; $i<count ($chain); $i++)
+                    $chain[$i] = trim ($chain[$i]);
+
+                if ( ! in_array("raw", $chain))
+                    $chain[] = "_DEFAULT_";
 
                 $varName = trim (array_shift($chain));
                 $value = $this->_getValueByName($context, $varName, $softFail);
-
-                echo "value $varName: " . $value;
 
                 foreach ($chain as $curName) {
                     if ( ! isset ($this->mFilter[$curName]))
@@ -204,7 +220,7 @@ class TextTemplate {
             $context["@index0"] = $index;
             $context["@index1"] = $index+1;
             $curContent = $this->_parseBlock($context, $content, $softFail);
-            $curContent = $this->_parseTags($context, $curContent, $softFail);
+            $curContent = $this->_parseValueOfTags($context, $curContent, $softFail);
 
             $result .= $curContent;
             $index++;
@@ -257,7 +273,7 @@ class TextTemplate {
             return "";
 
         $content = $this->_parseBlock($context, $content, $softFail);
-        $content = $this->_parseTags($context, $content, $softFail);
+        $content = $this->_parseValueOfTags($context, $content, $softFail);
         return $content;
 
     }
@@ -310,7 +326,7 @@ class TextTemplate {
         $text = $this->_replaceNestingLevels($text);
 
         $text = $this->_parseBlock($context, $text, $softFail);
-        $result = $this->_parseTags($context, $text, $softFail);
+        $result = $this->_parseValueOfTags($context, $text, $softFail);
 
         return $result;
     }
