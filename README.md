@@ -13,6 +13,13 @@ code is eval'ed. So TextTemplate should be more secure than Smarty or Twig by de
 
 TextTemplate supports infinite-nested loops and sequences.
 
+## Install
+
+Just Copy the contents of <https://github.com/dermatthes/text-template/src/TextTemplate.php> to your project folder to
+use TextTemplate. It's just one class.
+
+Or clone this repository and add this as external to your project.
+
 ## Basic Example
 ```php
 
@@ -34,12 +41,6 @@ $tt = new TextTemplate($tplStr);
 echo $tt->apply ($data);
 ```
 
-## Install
-
-Just Copy the contents of <https://github.com/dermatthes/text-template/src/TextTemplate.php> to your project folder to
-use TextTemplate. It's just one class.
-
-Or clone this repository and add this as external to your project.
 
 
 ## Value injection
