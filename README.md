@@ -15,13 +15,14 @@ TextTemplate supports infinite-nested loops and sequences.
 
 ## Install
 
-Just Copy the contents of <https://github.com/dermatthes/text-template/blob/master/src/TextTemplate.php> to your project folder to
+* __Copy n Paste:__ Just Copy the contents of <https://github.com/dermatthes/text-template/blob/master/src/TextTemplate.php> to your project folder to
 use TextTemplate. It's just one class.
 
-Or clone this repository and add this as external to your project.
+* __Git externals:__ Clone this repository and add this as external to your project.
 
-Or, if you want to integrate only the Files we offer a gzip'ed phar archive: <https://github.com/dermatthes/text-template/blob/master/_build/text-template.recent.phar.php.gz>
+* __Download gzip'ed phar:__ If you like downloads we offer you a gzip'ed phar archive: <https://github.com/dermatthes/text-template/blob/master/_build/text-template.recent.phar.php.gz>
 
+_TextTemplate uses Phing to build the phar-archives and gzip them. Just execute main-target in build.xml to build your own version_
 
 
 ## Basic Example
