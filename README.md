@@ -1,20 +1,22 @@
 # Text-Template
 Single-Class PHP5 template engine with support for if/loops/filters
 
-It is aimed to be a small Template-Engine to meet e-Mailing or small html-Template demands. It is not meant
+It is aimed to be a small string Template-Engine to meet e-Mailing or small html-Template demands. It is not meant
 to be a replacement for pre-compiled full featured Template-Engines like Smarty or Twig.
 
 TextTemplate uses Regular-Expressions for text-Parsing. No code is generated or evaluated - so this might
 be a secure solution to use in no time-critical situations.
 
-Whilst most template-engines rely on eval'ing generated code, Text-Template uses a  
-regular-expressions-only model to parse the templates. Nor any intermediate code is generated nor any 
+Whilst most template-engines rely on eval'ing generated code and filesystem-access, Text-Template uses a  
+set of regular-expressions to parse the template. Nor any intermediate code is generated nor any 
 code is eval'ed. So TextTemplate should be more secure than Smarty or Twig by design.
 
 TextTemplate supports infinite-nested loops and sequences.
 
 ## Basic Example
 ```php
+
+// 1. Define the Template
 $tplStr = <<<EOT
 Hello World {= name }
 {if name == "Matthias"}
@@ -22,10 +24,12 @@ Hallo {= name | capitalize }
 {/if}
 EOT;
 
+// 2. Define the Data for the Template
 $data = [
     "name" => "Matthias"
 ];
 
+// 3. Parse
 $tt = new TextTemplate($tplStr);
 echo $tt->apply ($data);
 ```
