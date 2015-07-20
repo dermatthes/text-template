@@ -25,11 +25,12 @@
  *
  * For further information about me or my projects visit
  *
- * http://www.leuffen.de
+ * http://leuffen.de
  * https://github.com/dermatthes
  *
  */
 
+namespace de\leuffen;
 
 class TextTemplate {
 
