@@ -41,6 +41,13 @@ Use the value Tag
 To inject a value to the Code. Any variables will be ```htmlspecialchars()``` encoded by default. To
 output the RAW content use the ```raw```-Filter: ```{=htmlCode|raw}```
 
+To access array elements or objects use "." to access sub-elements:
+ 
+ ```
+ {= users.0.name}
+ ```
+ 
+
 
 ### Adding Filters
 
@@ -85,6 +92,16 @@ You can insert loops:
 Current Name: {= curName}
 {/for}
 ```
+
+Inside each loop, there are to magick-values ```@index0``` (index starting with 0) and ```@index1``` for a
+index starting with 1.
+
+```
+{for curName in names}
+Line {= @index1 }: {= curName}
+{/for}
+```
+
 
 ## Conditions (if)
 
