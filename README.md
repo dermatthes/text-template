@@ -139,7 +139,7 @@ The logic-Expression-Parser won't handle logic connections (OR / AND) in conditi
 Although the parser is build of pure regular-expressions, I tried to avoid too expensive constructions like
 read ahead, etc.
 
-And we got quite fast results: 
+And we got quite good results: 
 
 | Template size | Parsing time[sec] |
 |---------------|-------------------|
