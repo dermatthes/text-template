@@ -61,8 +61,20 @@ Use this filter inside your template
 ```
 
 
+### Replacing the default-Filter
+By default and for security reason all values will be escaped using the "_DEFAULT_"-Filter. (except if
+"raw" was selected within the filter section)
 
+If you, for some reason, want to disable this functionality or change the escape function you can 
+overwrite the _DEFAULT_-Filter:
 
+```php
+$tt->addFilter ("_DEFAULT_", function ($input) {
+    return strip_tags ($input);
+});
+```
+
+This example will replace the htmlspecialchars() escaper by the strip_tags() function.
 
 ## Loops
 
