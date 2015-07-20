@@ -42,6 +42,28 @@ To inject a value to the Code. Any variables will be ```htmlspecialchars()``` en
 output the RAW content use the ```raw```-Filter: ```{=htmlCode|raw}```
 
 
+### Adding Filters
+
+You can add custom filters or overwrite own filters.
+
+Adding a new Filter:
+
+```php
+$tt->addFilter ("currency", function ($input) {
+    return number_format ($input, 2, ",", ".");
+});
+```
+
+Use this filter inside your template
+
+```
+{= someVariable | currency }
+```
+
+
+
+
+
 ## Loops
 
 You can insert loops:
@@ -63,6 +85,8 @@ Hello World
 ```
 
 Limitation: Logical connections like OR / AND are not possible at the moment. Maybe in the future.
+
+
 
 
 
