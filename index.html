@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Text-template by dermatthes</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Text-template</h1>
+        <h2>Single-Class string template engine for PHP5 supporting if/loops/filters</h2>
+        <a href="https://github.com/dermatthes/text-template" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a id="text-template" class="anchor" href="#text-template" aria-hidden="true"><span class="octicon octicon-link"></span></a>Text-Template</h1>
+
+<p>Single-Class PHP5 template engine with support for if/loops/filters</p>
+
+<p>It is aimed to be a small string Template-Engine to meet e-Mailing or small html-Template demands. It is not meant
+to be a replacement for pre-compiled full featured Template-Engines like Smarty or Twig.</p>
+
+<p>TextTemplate uses Regular-Expressions for text-Parsing. No code is generated or evaluated - so this might
+be a secure solution to use in no time-critical situations.</p>
+
+<p>Whilst most template-engines rely on eval'ing generated code and filesystem-access, Text-Template uses a<br>
+set of regular-expressions to parse the template. Nor any intermediate code is generated nor any 
+code is eval'ed. So TextTemplate should be more secure than Smarty or Twig by design.</p>
+
+<p>TextTemplate supports infinite-nested loops and sequences.</p>
+
+<h2>
+<a id="install" class="anchor" href="#install" aria-hidden="true"><span class="octicon octicon-link"></span></a>Install</h2>
+
+<p>Just Copy the contents of <a href="https://github.com/dermatthes/text-template/blob/master/src/TextTemplate.php">https://github.com/dermatthes/text-template/blob/master/src/TextTemplate.php</a> to your project folder to
+use TextTemplate. It's just one class.</p>
+
+<p>Or clone this repository and add this as external to your project.</p>
+
+<h2>
+<a id="basic-example" class="anchor" href="#basic-example" aria-hidden="true"><span class="octicon octicon-link"></span></a>Basic Example</h2>
+
+<div class="highlight highlight-php"><pre><span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">// 1. Define the Template</span></span>
+<span class="pl-s1"><span class="pl-smi">$tplStr</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">&lt;&lt;&lt;</span><span class="pl-k">EOT</span></span></span>
+<span class="pl-s1"><span class="pl-s">Hello World {= name }</span></span>
+<span class="pl-s1"><span class="pl-s">{if name == "Matthias"}</span></span>
+<span class="pl-s1"><span class="pl-s">Hallo {= name | capitalize }</span></span>
+<span class="pl-s1"><span class="pl-s">{/if}</span></span>
+<span class="pl-s1"><span class="pl-s"><span class="pl-k">EOT</span></span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">// 2. Define the Data for the Template</span></span>
+<span class="pl-s1"><span class="pl-smi">$data</span> <span class="pl-k">=</span> [</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">"</span>name<span class="pl-pds">"</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">"</span>Matthias<span class="pl-pds">"</span></span></span>
+<span class="pl-s1">];</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c">// 3. Parse</span></span>
+<span class="pl-s1"><span class="pl-smi">$tt</span> <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-c1">TextTemplate</span>(<span class="pl-smi">$tplStr</span>);</span>
+<span class="pl-s1"><span class="pl-c1">echo</span> <span class="pl-smi">$tt</span><span class="pl-k">-&gt;</span>apply (<span class="pl-smi">$data</span>);</span></pre></div>
+
+<h2>
+<a id="value-injection" class="anchor" href="#value-injection" aria-hidden="true"><span class="octicon octicon-link"></span></a>Value injection</h2>
+
+<p>Use the value Tag</p>
+
+<pre><code>{= varName}
+</code></pre>
+
+<p>To inject a value to the Code. Any variables will be <code>htmlspecialchars()</code> encoded by default. To
+output the RAW content use the <code>raw</code>-Filter: <code>{=htmlCode|raw}</code></p>
+
+<p>To access array elements or objects use "." to access sub-elements:</p>
+
+<pre><code> {= users.0.name}
+</code></pre>
+
+<h3>
+<a id="adding-filters" class="anchor" href="#adding-filters" aria-hidden="true"><span class="octicon octicon-link"></span></a>Adding Filters</h3>
+
+<p>You can add custom filters or overwrite own filters.</p>
+
+<p>Adding a new Filter:</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s1"><span class="pl-smi">$tt</span><span class="pl-k">-&gt;</span>addFilter (<span class="pl-s"><span class="pl-pds">"</span>currency<span class="pl-pds">"</span></span>, <span class="pl-k">function</span> (<span class="pl-smi">$input</span>) {</span>
+<span class="pl-s1">    <span class="pl-k">return</span> <span class="pl-c1">number_format</span> (<span class="pl-smi">$input</span>, <span class="pl-c1">2</span>, <span class="pl-s"><span class="pl-pds">"</span>,<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>.<span class="pl-pds">"</span></span>);</span>
+<span class="pl-s1">});</span></pre></div>
+
+<p>Use this filter inside your template</p>
+
+<pre><code>{= someVariable | currency }
+</code></pre>
+
+<h3>
+<a id="replacing-the-default-filter" class="anchor" href="#replacing-the-default-filter" aria-hidden="true"><span class="octicon octicon-link"></span></a>Replacing the default-Filter</h3>
+
+<p>By default and for security reason all values will be escaped using the "<em>DEFAULT</em>"-Filter. (except if
+"raw" was selected within the filter section)</p>
+
+<p>If you, for some reason, want to disable this functionality or change the escape function you can 
+overwrite the <em>DEFAULT</em>-Filter:</p>
+
+<div class="highlight highlight-php"><pre><span class="pl-s1"><span class="pl-smi">$tt</span><span class="pl-k">-&gt;</span>addFilter (<span class="pl-s"><span class="pl-pds">"</span>_DEFAULT_<span class="pl-pds">"</span></span>, <span class="pl-k">function</span> (<span class="pl-smi">$input</span>) {</span>
+<span class="pl-s1">    <span class="pl-k">return</span> <span class="pl-c1">strip_tags</span> (<span class="pl-smi">$input</span>);</span>
+<span class="pl-s1">});</span></pre></div>
+
+<p>This example will replace the htmlspecialchars() escaper by the strip_tags() function.</p>
+
+<h2>
+<a id="loops" class="anchor" href="#loops" aria-hidden="true"><span class="octicon octicon-link"></span></a>Loops</h2>
+
+<p>You can insert loops:</p>
+
+<pre><code>{for curName in names}
+Current Name: {= curName}
+{/for}
+</code></pre>
+
+<p>Inside each loop, there are to magick-values <code>@index0</code> (index starting with 0) and <code>@index1</code> for a
+index starting with 1.</p>
+
+<pre><code>{for curName in names}
+Line {= @index1 }: {= curName}
+{/for}
+</code></pre>
+
+<h2>
+<a id="conditions-if" class="anchor" href="#conditions-if" aria-hidden="true"><span class="octicon octicon-link"></span></a>Conditions (if)</h2>
+
+<p>You can use if-conditions:</p>
+
+<pre><code>{if someVarName == "SomeValue"}
+Hello World
+{/if}
+</code></pre>
+
+<p>Limitation: Logical connections like OR / AND are not possible at the moment. Maybe in the future.</p>
+
+<h2>
+<a id="limitations" class="anchor" href="#limitations" aria-hidden="true"><span class="octicon octicon-link"></span></a>Limitations</h2>
+
+<p>The logic-Expression-Parser won't handle logic connections (OR / AND) in conditions.</p>
+
+<h2>
+<a id="about" class="anchor" href="#about" aria-hidden="true"><span class="octicon octicon-link"></span></a>About</h2>
+
+<p>Text-Template was written by Matthias Leuffen </p>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/dermatthes/text-template/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/dermatthes/text-template/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/dermatthes/text-template"></a> is maintained by <a href="https://github.com/dermatthes">dermatthes</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
