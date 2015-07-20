@@ -45,6 +45,7 @@
 
 
     <target name="main" depends="build_phar" description="Generate local build from sources build directory">
+        <delete file="_build/text-template.recent.phar.php.gz"/>
         <tar compression="gzip" destfile="_build/text-template.recent.phar.php.gz">
             <fileset dir="./_build/">
                 <filename name="text-template.phar.php" />
