@@ -144,7 +144,7 @@ And we got quite fast results:
 | Template size | Parsing time[sec] |
 |---------------|-------------------|
 | 50kB          | 0.002             |
-| 200kb         | 0.007             |
+| 200kB         | 0.007             |
 
 
 
