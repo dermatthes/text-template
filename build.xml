@@ -50,7 +50,7 @@
                 <filename name="text-template.phar.php" />
             </fileset>
         </tar>
-        <copy file="_build/text-template.recent.phar.php.gz" tofile="_build/text-template.${buildts}.phar.php.gz" />
+        <!-- <copy file="_build/text-template.recent.phar.php.gz" tofile="_build/text-template.${buildts}.phar.php.gz" /> -->
         <phingcall target="clean"/>
     </target>
 

@@ -20,6 +20,10 @@ use TextTemplate. It's just one class.
 
 Or clone this repository and add this as external to your project.
 
+Or, if you want to integrate only the Files we offer a gzip'ed phar archive: <https://github.com/dermatthes/text-template/blob/master/_build/text-template.recent.phar.php.gz>
+
+
+
 ## Basic Example
 ```php
 
