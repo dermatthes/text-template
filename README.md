@@ -15,7 +15,7 @@ TextTemplate supports infinite-nested loops and sequences.
 
 ## Install
 
-Just Copy the contents of <https://github.com/dermatthes/text-template/src/TextTemplate.php> to your project folder to
+Just Copy the contents of <https://github.com/dermatthes/text-template/blob/master/src/TextTemplate.php> to your project folder to
 use TextTemplate. It's just one class.
 
 Or clone this repository and add this as external to your project.
