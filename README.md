@@ -7,16 +7,11 @@ to be a replacement for pre-compiled full featured Template-Engines like Smarty 
 TextTemplate uses Regular-Expressions for text-Parsing. No code is generated or evaluated - so this might
 be a secure solution to use in no time-critical situations.
 
-TextTemplate supports infinite-nested loops and sequences.
-
-## Secure by design / no eval()'ing
-
 Whilst most template-engines rely on eval'ing generated code, Text-Template uses a  
 regular-expressions-only model to parse the templates. Nor any intermediate code is generated nor any 
 code is eval'ed. So TextTemplate should be more secure than Smarty or Twig by design.
 
-(Of course, it comes with a reduced set on functionality. But it should answer the purpose of 
-user-definable templates for e-Mail and small html-inlays)
+TextTemplate supports infinite-nested loops and sequences.
 
 ## Basic Example
 ```php
