@@ -1,4 +1,6 @@
 <?php
+use de\leuffen\text_template\TextTemplate;
+
 /**
  * Created by PhpStorm.
  * User: matthes
