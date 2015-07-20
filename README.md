@@ -134,6 +134,19 @@ Limitation: Logical connections like OR / AND are not possible at the moment. Ma
 
 The logic-Expression-Parser won't handle logic connections (OR / AND) in conditions.
 
+## Benchmark
+
+Although the parser is build of pure regular-expressions, I tried to avoid too expensive constructions like
+read ahead, etc.
+
+And we got quite fast results: 
+
+| Template-Size | Parsing-Time[sec] |
+|-------------------|-------------------|
+| 50kB          | 0.002  |
+| 200kb         | 0.007  |
+
+
 
 ## About
 Text-Template was written by Matthias Leuffen <matthes [at] leuffen [dot] de>
