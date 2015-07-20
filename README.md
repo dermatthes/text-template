@@ -118,9 +118,11 @@ Limitation: Logical connections like OR / AND are not possible at the moment. Ma
 
 
 
-
 ## Limitations
 
 The logic-Expression-Parser won't handle logic connections (OR / AND) in conditions.
 
+
+## About
+Text-Template was written by Matthias Leuffen <matthes [at] leuffen [dot] de>
 
