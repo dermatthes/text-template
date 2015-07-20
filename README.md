@@ -141,10 +141,10 @@ read ahead, etc.
 
 And we got quite fast results: 
 
-| Template-Size | Parsing-Time[sec] |
-|-------------------|-------------------|
-| 50kB          | 0.002  |
-| 200kb         | 0.007  |
+| Template size | Parsing time[sec] |
+|---------------|-------------------|
+| 50kB          | 0.002             |
+| 200kb         | 0.007             |
 
 
 
