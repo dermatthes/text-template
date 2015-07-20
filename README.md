@@ -35,6 +35,12 @@ $tt = new TextTemplate($tplStr);
 echo $tt->apply ($data);
 ```
 
+## Install
+
+Just Copy the contents of `_build/TextTemplate.nightly.php` to your project folder to
+use TextTemplate. It's just one class.
+
+
 ## Value injection
 
 Use the value Tag
