@@ -30,7 +30,7 @@
  *
  */
 
-namespace de\leuffen;
+namespace de\leuffen\text_template;
 
 class TextTemplate {
 
