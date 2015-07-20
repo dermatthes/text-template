@@ -53,6 +53,8 @@ use TextTemplate. It's just one class.</p>
 
 <p>Or clone this repository and add this as external to your project.</p>
 
+<p>Or, if you want to integrate only the Files we offer a gzip'ed phar archive: <a href="https://github.com/dermatthes/text-template/blob/master/_build/text-template.recent.phar.php.gz">https://github.com/dermatthes/text-template/blob/master/_build/text-template.recent.phar.php.gz</a></p>
+
 <h2>
 <a id="basic-example" class="anchor" href="#basic-example" aria-hidden="true"><span class="octicon octicon-link"></span></a>Basic Example</h2>
 
@@ -157,9 +159,36 @@ Hello World
 <p>The logic-Expression-Parser won't handle logic connections (OR / AND) in conditions.</p>
 
 <h2>
+<a id="benchmark" class="anchor" href="#benchmark" aria-hidden="true"><span class="octicon octicon-link"></span></a>Benchmark</h2>
+
+<p>Although the parser is build of pure regular-expressions, I tried to avoid too expensive constructions like
+read ahead, etc.</p>
+
+<p>And we got quite good results: </p>
+
+<table>
+<thead>
+<tr>
+<th>Template size</th>
+<th>Parsing time[sec]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>50kB</td>
+<td>0.002</td>
+</tr>
+<tr>
+<td>200kB</td>
+<td>0.007</td>
+</tr>
+</tbody>
+</table>
+
+<h2>
 <a id="about" class="anchor" href="#about" aria-hidden="true"><span class="octicon octicon-link"></span></a>About</h2>
 
-<p>Text-Template was written by Matthias Leuffen </p>
+<p>Text-Template was written by Matthias Leuffen <a href="http://leuffen.de">http://leuffen.de</a></p>
         </section>
 
         <aside id="sidebar">
