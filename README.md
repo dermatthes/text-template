@@ -10,7 +10,7 @@ TextTemplate supports infinite-nested loops and sequences.
 
 ## Security by design
 
-TextTemplate useses Regular-Expressions only to parse the templates. Nor any intermediate code is generated nor is
+TextTemplate useses only regular-expressions to parse the templates. Nor any intermediate code is generated nor is
 any code eval'ed. So TextTemplate should be  more secure than Smarty or Twig by design.
 
 
@@ -86,7 +86,7 @@ Current Name: {= curName}
 {/for}
 ```
 
-## If
+## Conditions (if)
 
 You can use if-conditions:
 
@@ -104,6 +104,6 @@ Limitation: Logical connections like OR / AND are not possible at the moment. Ma
 
 ## Limitations
 
-The logic-Expression-Parser won't handle logic connections (OR / AND).
+The logic-Expression-Parser won't handle logic connections (OR / AND) in conditions.
 
 
