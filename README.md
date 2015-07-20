@@ -36,7 +36,7 @@ echo $tt->apply ($data);
 
 ## Install
 
-Just Copy the contents of `_build/TextTemplate.nightly.php` to your project folder to
+Just Copy the contents of <https://github.com/dermatthes/text-template/src/TextTemplate.php> to your project folder to
 use TextTemplate. It's just one class.
 
 
