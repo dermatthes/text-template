@@ -149,5 +149,5 @@ And we got quite good results:
 
 
 ## About
-Text-Template was written by Matthias Leuffen <matthes [at] leuffen [dot] de>
+Text-Template was written by Matthias Leuffen <http://leuffen.de>
 
