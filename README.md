@@ -1,18 +1,22 @@
 # Text-Template
 Single-Class PHP5 template engine with support for if/loops/filters
 
-It is aimed to be a small Template-Engine to meet e-Mailing or small html-Template demands.
+It is aimed to be a small Template-Engine to meet e-Mailing or small html-Template demands. It is not meant
+to be a replacement for pre-compiled full featured Template-Engines like Smarty or Twig.
 
 TextTemplate uses Regular-Expressions for text-Parsing. No code is generated or evaluated - so this might
 be a secure solution to use in no time-critical situations.
 
 TextTemplate supports infinite-nested loops and sequences.
 
-## Security by design
+## Secure by design / no eval()'ing
 
-TextTemplate useses only regular-expressions to parse the templates. Nor any intermediate code is generated nor is
-any code eval'ed. So TextTemplate should be  more secure than Smarty or Twig by design.
+Whilst most template-engines rely on eval'ing generated code, Text-Template uses a  
+regular-expressions-only model to parse the templates. Nor any intermediate code is generated nor any 
+code is eval'ed. So TextTemplate should be more secure than Smarty or Twig by design.
 
+(Of course, it comes with a reduced set on functionality. But it should answer the purpose of 
+user-definable templates for e-Mail and small html-inlays)
 
 ## Basic Example
 ```php
