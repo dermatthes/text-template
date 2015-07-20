@@ -265,7 +265,7 @@ class TextTemplate {
 
     private function _parseBlock ($context, $block, $softFail=TRUE) {
         // (?!\{): Lookahead Regex: Don't touch double {{
-        $result = preg_replace_callback('/\n?\{(?!=)(([a-z]+)[0-9]+)(.*?)\}(.*?)\n?\{\/\1\}\n?/ism',
+        $result = preg_replace_callback('/\{(?!=)(([a-z]+)[0-9]+)(.*?)\}\n?(.*?)\{\/\1\}\n?/ism',
             function ($matches) use ($context, $softFail) {
                 $command = $matches[2];
                 $cmdParam = $matches[3];

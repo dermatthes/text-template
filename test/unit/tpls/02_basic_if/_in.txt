@@ -1,0 +1,9 @@
+1: {= value1 }
+{if boolVal == TRUE}
+2: Boolean is true
+{/if}
+3: Some Line of Code
+{if boolVal == FALSE}
+4: Some skippedText
+{/if}
+5: Some other text

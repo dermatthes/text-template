@@ -9,9 +9,9 @@ be a secure solution to use in no time-critical situations.
 ## Basic Example
 ```php
 $tplStr = <<<EOT
-Hello World {{ name }}
+Hello World {= name }
 {if name == "Matthias"}
-Hallo {{ name | capitalize }}
+Hallo {= name | capitalize }
 {/if}
 EOT;
 
@@ -25,11 +25,6 @@ echo $tt->apply ($data);
 
 ## Limitations
 
-Text-Template cannot handle nested if or loops. This limitation will be eliminated with in 
-the next days.
-
 The logic-Expression-Parser won't handle logic connections (OR / AND).
-
-The Filter-Engine is not yet implemented.
 
 

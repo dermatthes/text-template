@@ -16,7 +16,6 @@
             $in = "{ if xyz}{ if zzz}{=value}{ /if}{/if}";
             $tt = new TextTemplate();
             $out = $tt->_replaceNestingLevels($in);
-
             $this->assertEquals("{if0 xyz}{if1 zzz}{=value}{/if1}{/if0}", $out);
         }
 
@@ -30,9 +29,8 @@
                 echo "\nTesting $dir...";
                 $tt->loadTemplate(file_get_contents($dir . "/_in.txt"));
                 $data = require ($dir . "/_in.php");
-                print_r ($data);
                 $out = $tt->apply($data);
-                $this->assertEquals(file_get_contents($dir . "/out.txt"), $out);
+                $this->assertEquals(file_get_contents($dir . "/out.txt"), $out, "Error in check: {$dir}");
             }
 
         }
