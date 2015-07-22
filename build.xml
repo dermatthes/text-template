@@ -34,8 +34,8 @@
 
 
     <target name="copy_main_files_to_stage" depends="clean">
-        <mkdir dir="./_stage"/>
-        <copy todir="./_stage/">
+        <mkdir dir="./_stage/text-template"/>
+        <copy todir="./_stage/text-template">
             <fileset dir="./src/">
                 <include name="**"/>
             </fileset>
@@ -61,8 +61,8 @@
 
     <target name="build_phar" depends="copy_main_files_to_stage, phpunit">
         <mkdir dir="./_build"/>
-        <pharpackage destfile="./_build/text-template.phar.php" basedir="./_stage/" stub="./xsrc/pharStub.php">
-            <fileset dir="./_stage">
+        <pharpackage destfile="./_build/text-template.phar.php" basedir="./_stage/text-template" stub="./xsrc/pharStub.php">
+            <fileset dir="./_stage/text-template">
                 <include name="**" />
             </fileset>
         </pharpackage>
