@@ -16,6 +16,7 @@
 
     <target name="clean">
         <delete file="_build/text-template.phar.php"/>
+        <delete dir="./_stage"/>
     </target>
 
 
@@ -32,25 +33,54 @@
     </target>
 
 
-
-
-    <target name="build_phar" depends="phpunit">
-        <mkdir dir="./_build"/>
-        <pharpackage destfile="./_build/text-template.phar.php" basedir="./src/" stub="./xsrc/pharStub.php">
+    <target name="copy_main_files_to_stage" depends="clean">
+        <mkdir dir="./_stage"/>
+        <copy todir="./_stage/">
             <fileset dir="./src/">
-                <include name="**/**" />
+                <include name="**"/>
+            </fileset>
+            <fileset dir="./">
+                <include name="README.md"/>
+                <include name="LICENSE"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="build_src_tarball" depends="copy_main_files_to_stage, phpunit">
+        <mkdir dir="./_build"/>
+        <delete file="_build/text-template.recent.src.tar.gz"/>
+
+        <tar compression="gzip" destfile="_build/text-template.recent.src.tar.gz">
+            <fileset dir="./_stage/">
+                <filename name="**" />
+            </fileset>
+        </tar>
+    </target>
+
+
+
+    <target name="build_phar" depends="copy_main_files_to_stage, phpunit">
+        <mkdir dir="./_build"/>
+        <pharpackage destfile="./_build/text-template.phar.php" basedir="./_stage/" stub="./xsrc/pharStub.php">
+            <fileset dir="./_stage">
+                <include name="**" />
             </fileset>
         </pharpackage>
     </target>
 
 
-    <target name="main" depends="build_phar" description="Generate local build from sources build directory">
+    <target name="build_phar_gzip" depends="build_phar">
         <delete file="_build/text-template.recent.phar.php.gz"/>
         <tar compression="gzip" destfile="_build/text-template.recent.phar.php.gz">
             <fileset dir="./_build/">
                 <filename name="text-template.phar.php" />
             </fileset>
         </tar>
+    </target>
+
+
+    <target name="main" depends="build_phar_gzip, build_src_tarball" description="Generate local build from sources build directory">
+
         <!-- <copy file="_build/text-template.recent.phar.php.gz" tofile="_build/text-template.${buildts}.phar.php.gz" /> -->
         <phingcall target="clean"/>
     </target>
