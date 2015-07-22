@@ -22,6 +22,8 @@ use TextTemplate. It's just one class.
 
 * __Download gzip'ed phar:__ If you like downloads we offer you a gzip'ed phar archive: <https://github.com/dermatthes/text-template/blob/master/_build/text-template.recent.phar.php.gz>
 
+* __Download source tar:__ <https://raw.githubusercontent.com/dermatthes/text-template/master/_build/text-template.recent.src.tar.gz>
+
 _TextTemplate uses Phing to build the phar-archives and gzip them. Just execute main-target in build.xml to build your own version_
 
 
