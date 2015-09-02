@@ -249,13 +249,16 @@ class TextTemplate {
 
 
     private function _runIf ($context, $content, $cmdParam, $softFail=TRUE) {
-        if ( ! preg_match('/([\"\']?[a-z0-9\.]*[\"\']?)\s*(==|<|>|!=)\s*([\"\']?[a-z0-9\.]*[\"\']?)/i', $cmdParam, $matches))
+        //echo $cmdParam;
+        if ( ! preg_match('/([\"\']?.*?[\"\']?)\s*(==|<|>|!=)\s*([\"\']?.*[\"\']?)/i', $cmdParam, $matches))
             return "!! Invalid command sequence: '$cmdParam' !!";
 
-        $comp1 = $this->_getItemValue($matches[1], $context);
-        $comp2 = $this->_getItemValue($matches[3], $context);
+        //print_r ($matches);
 
-        echo $comp1 . $comp2;
+        $comp1 = $this->_getItemValue(trim ($matches[1]), $context);
+        $comp2 = $this->_getItemValue(trim ($matches[3]), $context);
+
+        //echo $comp1 . $comp2;
 
         $doIf = FALSE;
         switch ($matches[2]) {
