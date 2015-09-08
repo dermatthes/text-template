@@ -258,7 +258,7 @@ class TextTemplate {
         $comp1 = $this->_getItemValue(trim ($matches[1]), $context);
         $comp2 = $this->_getItemValue(trim ($matches[3]), $context);
 
-        //echo $comp1 . $comp2;
+        //decho $comp1 . $comp2;
 
         $doIf = FALSE;
         switch ($matches[2]) {

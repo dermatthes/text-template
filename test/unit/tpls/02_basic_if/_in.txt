@@ -1,4 +1,5 @@
 1: {= value1 }
+2: {= floatVal }
 {if boolVal == TRUE}
 2: Boolean is true
 {/if}
