@@ -1,0 +1,22 @@
+1:Line
+{if boolVal == false}
+2: True Value
+{/if}
+3: Line
+
+
+1:Line
+{if boolVal == true}
+2: True Value
+{/if}
+3: Line
+
+
+1:Line
+2: True Value {if boolVal == true} Some Value{/if}
+3: Line
+
+
+1:Line
+2: True Value {if boolVal == false} Some Value{/if}
+3: Line
