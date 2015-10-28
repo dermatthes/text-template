@@ -188,7 +188,12 @@ class TextTemplate {
                     $chain[] = "_DEFAULT_";
 
                 $varName = trim (array_shift($chain));
-                $value = $this->_getValueByName($context, $varName, $softFail);
+
+                if ($varName === "__CONTEXT__") {
+                    $value = "\n----- __CONTEXT__ -----\n" . var_export($context, true) . "\n----- / __CONTEXT__ -----\n";
+                } else {
+                    $value = $this->_getValueByName($context, $varName, $softFail);
+                }
 
                 foreach ($chain as $curName) {
                     if ( ! isset ($this->mFilter[$curName]))

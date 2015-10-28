@@ -135,6 +135,15 @@ Hello World
 Limitation: Logical connections like OR / AND are not possible at the moment. Maybe in the future.
 
 
+## Debugging the Parameters
+
+To see all Parameters passed to the template use:
+
+```
+{= __CONTEXT__ | raw}
+```
+
+It will output the structure of the current context.
 
 
 ## Limitations
