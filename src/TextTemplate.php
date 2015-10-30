@@ -95,7 +95,7 @@ class TextTemplate {
      *
      * @param $input
      * @return mixed
-     * @throws Exception
+     * @throws \Exception
      */
     public function _replaceNestingLevels ($input) {
         $indexCounter = 0;
@@ -118,13 +118,13 @@ class TextTemplate {
                         return $out;
                     } else if ($slash == "/") {
                         if ( ! isset ($nestingIndex[$tag]))
-                            throw new Exception("Line {$li}: Opening tag not found for closing tag: '{$matches[0]}'");
+                            throw new \Exception("Line {$li}: Opening tag not found for closing tag: '{$matches[0]}'");
                         if (count ($nestingIndex[$tag]) == 0)
-                            throw new Exception("Line {$li}: Nesting level does not match for closing tag: '{$matches[0]}'");
+                            throw new \Exception("Line {$li}: Nesting level does not match for closing tag: '{$matches[0]}'");
                         $curIndex = array_pop($nestingIndex[$tag]);
                         return "{/" . $tag . $curIndex[0] . "}";
                     } else {
-                        throw new Exception("Line {$li}: This exception should not appear!");
+                        throw new \Exception("Line {$li}: This exception should not appear!");
                     }
                 },
                 $lines[$li]
@@ -133,7 +133,7 @@ class TextTemplate {
         }
         foreach ($nestingIndex as $tag => $curNestingIndex) {
             if (count ($curNestingIndex) > 0)
-                throw new Exception("Unclosed tag '{$tag}' opened in line {$curNestingIndex[0][1]} ");
+                throw new \Exception("Unclosed tag '{$tag}' opened in line {$curNestingIndex[0][1]} ");
         }
         return implode ("\n", $lines);
     }
@@ -161,7 +161,7 @@ class TextTemplate {
                     }
                 } else {
                     if ( ! $softFail) {
-                        throw new Exception("ParsingError: Can't parse element: '{$name}' Error on subelement: '$cur'");
+                        throw new \Exception("ParsingError: Can't parse element: '{$name}' Error on subelement: '$cur'");
                     }
                     $value = NULL;
                 }
@@ -197,7 +197,7 @@ class TextTemplate {
 
                 foreach ($chain as $curName) {
                     if ( ! isset ($this->mFilter[$curName]))
-                        throw new Exception("Filter '$curName' not defined");
+                        throw new \Exception("Filter '$curName' not defined");
                     $fn = $this->mFilter[$curName];
                     $value = $fn($value);
                 }
