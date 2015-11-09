@@ -310,6 +310,9 @@ class TextTemplate {
                         return "!! Invalid command: '$command' !!";
                 }
             }, $block);
+        if ($result === NULL) {
+            throw new \Exception("preg_replace_callback() returned NULL: preg_last_error() returns: " . preg_last_error() . " (error == 2: preg.backtracklimit to low)");
+        }
         return $result;
     }
 
