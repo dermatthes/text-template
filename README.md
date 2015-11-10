@@ -88,11 +88,10 @@ Use this filter inside your template
 
 ### Predefined Filters
 
-|Name            | Description                                |
----------------------------------------------------------------
+| Name           | Description                                |
+|----------------|--------------------------------------------|
 | raw            | Display raw data (skip default escaping)   |
 | singleLine     | Transform Line-breaks to spaces            |
- 
 
 
 ### Replacing the default-Filter
