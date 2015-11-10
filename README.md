@@ -86,6 +86,14 @@ Use this filter inside your template
 {= someVariable | currency }
 ```
 
+### Predefined Filters
+
+|Name            | Description                                |
+---------------------------------------------------------------
+| raw            | Display raw data (skip default escaping)   |
+| singleLine     | Transform Line-breaks to spaces            |
+ 
+
 
 ### Replacing the default-Filter
 By default and for security reason all values will be escaped using the "_DEFAULT_"-Filter. (except if

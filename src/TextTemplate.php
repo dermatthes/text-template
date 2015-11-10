@@ -52,6 +52,7 @@ class TextTemplate {
 
         // Raw is only a pseudo-filter. If it is not in the chain of filters, __DEFAULT__ will be appended to the filter
         $this->mFilter["raw"] = function ($input) { return $input; };
+        $this->mFilter["singleLine"] = function ($input) { return str_replace("\n", " ", $input); };
     }
 
     /**
