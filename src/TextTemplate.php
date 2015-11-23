@@ -51,9 +51,21 @@ class TextTemplate {
         $this->mFilter["_DEFAULT_"] = function ($input) { return htmlspecialchars($input); };
 
         // Raw is only a pseudo-filter. If it is not in the chain of filters, __DEFAULT__ will be appended to the filter
+        $this->mFilter["html"] = function ($input) { return htmlspecialchars($input); };
         $this->mFilter["raw"] = function ($input) { return $input; };
         $this->mFilter["singleLine"] = function ($input) { return str_replace("\n", " ", $input); };
+        $this->mFilter["inivalue"] = function ($input) { return addslashes(str_replace("\n", " ", $input)); };
     }
+
+    /**
+     * Set the default Filter
+     *
+     * @param $filterName
+     */
+    public function setDefaultFilter ($filterName) {
+        $this->mFilter["_DEFAULT_"] = $this->mFilter[$filterName];
+    }
+
 
     /**
      * Add a user-defined filter function to the list of available filters.

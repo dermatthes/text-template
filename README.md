@@ -92,6 +92,8 @@ Use this filter inside your template
 |----------------|--------------------------------------------|
 | raw            | Display raw data (skip default escaping)   |
 | singleLine     | Transform Line-breaks to spaces            |
+| inivalue       | like singleLine including addslashes()     |
+| html           | htmlspecialchars()                         |
 
 
 ### Replacing the default-Filter
@@ -105,6 +107,12 @@ overwrite the _DEFAULT_-Filter:
 $tt->addFilter ("_DEFAULT_", function ($input) {
     return strip_tags ($input);
 });
+```
+
+or
+
+```php
+$tt->setDefaultFilter("singleLine");
 ```
 
 This example will replace the htmlspecialchars() escaper by the strip_tags() function.
