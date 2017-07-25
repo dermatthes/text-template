@@ -1,5 +1,5 @@
 {
-    "name": "text/temlate",
+    "name": "text/template",
     "type": "library",
     "description": "Text template with repeat",
     "keywords": ["YAML", "framework", "php"],
