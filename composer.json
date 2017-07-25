@@ -19,7 +19,7 @@
     },
     "autoload": {
         "psr-4": {
-            "de\leuffen\text_template": "src/"
+            "de\\leuffen\\text_template": "src/"
         }
     },
     "minimum-stability": "dev",
