@@ -22,8 +22,5 @@
             "de\\leuffen\\text_template\\": "src/"
         }
     },
-    "minimum-stability": "dev",
-    "require-dev": {
-        "nette/tester": "^1.7"
-    }
+    "minimum-stability": "dev"
 }
