@@ -1,4 +1,12 @@
 # Text-Template
+
+[![Downloads this Month](https://img.shields.io/packagist/dm/text/template.svg)](https://packagist.org/packages/text/template)
+[<img src="https://travis-ci.org/dermatthes/text-template.svg">](https://travis-ci.org/dermatthes/text-template)
+[![Latest Stable Version](https://poser.pugx.org/text/template/v/stable)](https://github.com/dermatthes/text-template/releases)
+[![Supports PHP 7.0+](https://raw.githubusercontent.com/xp-framework/web/master/static/php-7_0plus.png)](http://php.net/)
+
+
+
 Single-Class PHP5 template engine with support for if/loops/filters
 
 It is aimed to be a small string Template-Engine to meet e-Mailing or small html-Template demands. It is not meant
