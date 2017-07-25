@@ -1,0 +1,29 @@
+{
+    "name": "text/temlate",
+    "type": "library",
+    "description": "Text template with repeat",
+    "keywords": ["YAML", "framework", "php"],
+    "homepage": "http://github.com/dermatthes/text-template",
+    "license": "Proprietary",
+    "authors": [
+        {
+            "name": "Matthias Leuffen",
+            "email": "matthes@leuffen.de"
+        }
+    ],
+
+
+    "require": {
+        "php": ">=7.0",
+        "symfony/yaml": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "de\leuffen\text_template": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "require-dev": {
+        "nette/tester": "^1.7"
+    }
+}
