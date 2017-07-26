@@ -30,6 +30,8 @@ $tplStr = <<<EOT
 Hello World {= name }
 {if name == "Matthias"}
 Hallo {= name | capitalize }
+{elseif name == "Jan"}
+Hi Buddy
 {else}
 You are not Matthias
 {/if}
@@ -174,6 +176,18 @@ Limitation: Logical connections like OR / AND are not possible at the moment. Ma
 ```
 {if someVarName == "SomeValue"}
 Hello World
+{else}
+Goodbye World
+{/if}
+```
+
+Lists of choices:
+
+```
+{if someVarName == "SomeValue"}
+Hello World
+{elseif someVarName == "OtherValue"}
+Hello Moon
 {else}
 Goodbye World
 {/if}

@@ -302,27 +302,22 @@ class TextTemplate {
         $doIf = false;
 
         $cmdParam = trim ($cmdParam);
-        echo "\n+ $cmdParam " . strpos($cmdParam, "::NL_ELSE_FALSE");
+        //echo "\n+ $cmdParam " . strpos($cmdParam, "::NL_ELSE_FALSE");
         // Handle {else}{elseif} constructions
         if ($cmdParam === "::NL_ELSE_FALSE") {
-            echo "ELSE ";
             // This is the {else} path of a if construction
             if ($ifConditionDidMatch == true) {
-                echo "BREAK ELSE";
                 return ""; // Do not run else block
             }
             $cmdParam = "TRUE==TRUE";
         } elseif (strpos($cmdParam, "::NL_ELSE_FALSE") === 0) {
-            echo "ELSEIF ";
             // This is a {elseif (condition)} block
             if ($ifConditionDidMatch == true) {
-                echo "BREAK!";
                 return ""; // Do not run ifelse block, if block before succeeded
             }
 
             $cmdParam = substr($cmdParam, strlen ("::NL_ELSE_FALSE")+1);
         } else {
-            echo "IF ";
             // This is the original {if}
             $ifConditionDidMatch = false;
         }
@@ -380,8 +375,7 @@ class TextTemplate {
                 $cmdParam = $matches["cmdParam"];
                 $content = $matches["content"];
                 $nestingLevel = $matches["nestingLevel"];
-                print_r ($this->ifConditionMatch);
-                echo "\n> command $nestingLevel: A $command $cmdParam";
+
                 switch ($command) {
                     case "for":
                         return $this->_runFor($context, $content, $cmdParam, $softFail);
@@ -420,7 +414,6 @@ class TextTemplate {
         $text = $this->mTemplateText;
 
         $context = $params;
-
 
         $text = $this->_replaceNestingLevels($text);
         $text = $this->_replaceElseIf($text);
