@@ -14,8 +14,10 @@
 
 
     "require": {
-        "php": ">=7.0",
-        "symfony/yaml": "*"
+        "php": ">=7.0"
+    },
+    "require-dev": {
+        "nette/tester": "*"
     },
     "autoload": {
         "psr-4": {
