@@ -26,10 +26,14 @@ TextTemplate supports infinite-nested loops and sequences.
 
 // 1. Define the Template
 $tplStr = <<<EOT
+
 Hello World {= name }
 {if name == "Matthias"}
 Hallo {= name | capitalize }
+{else}
+You are not Matthias
 {/if}
+
 EOT;
 
 // 2. Define the Data for the Template
@@ -67,6 +71,7 @@ _TextTemplate uses Phing to build the phar-archives and gzip them. Just execute 
 
 
 
+
 ## Value injection
 
 Use the value Tag
@@ -82,7 +87,6 @@ To access array elements or objects use "." to access sub-elements:
  ```
  {= users.0.name}
  ```
- 
 
 
 ### Adding Filters
@@ -166,6 +170,14 @@ Hello World
 
 Limitation: Logical connections like OR / AND are not possible at the moment. Maybe in the future.
 
+## Conditions (else)
+```
+{if someVarName == "SomeValue"}
+Hello World
+{else}
+Goodbye World
+{/if}
+```
 
 ## Debugging the Parameters
 
@@ -194,6 +206,14 @@ And we got quite good results:
 | 50kB          | 0.002             |
 | 200kB         | 0.007             |
 
+
+
+## Contributing
+
+If you want to contribute, please send your Merge-Request or open
+a gitlab ticket.
+
+- __Bugs & Feature-Request:__ [GitHub Tickets](https://github.com/dermatthes/text-template/issues)
 
 
 ## About

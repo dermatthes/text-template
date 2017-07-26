@@ -89,6 +89,20 @@ class TextTemplate {
     }
 
 
+    public function _replaceElseIf ($input) {
+        $lines = explode("\n", $input);
+        for ($li=0; $li < count ($lines); $li++) {
+            $lines[$li] = preg_replace_callback('/\{else\}/im',
+                function ($matches) use (&$nestingIndex, &$indexCounter, &$li) {
+                    return "{/if}{if ::NL_ELSE_FALSE}";
+                },
+                $lines[$li]
+            );
+
+        }
+        return implode ("\n", $lines);
+    }
+
     /**
      * Tag-Nesting is done by initially adding an index to both the opening and the
      * closing tag. (By the way some cleanup is done)
@@ -266,58 +280,83 @@ class TextTemplate {
     }
 
 
-    private function _runIf ($context, $content, $cmdParam, $softFail=TRUE) {
+    private function _runIf ($context, $content, $cmdParam, $softFail=TRUE, &$ifConditionDidMatch) {
         //echo $cmdParam;
-        if ( ! preg_match('/([\"\']?.*?[\"\']?)\s*(==|<|>|!=)\s*([\"\']?.*[\"\']?)/i', $cmdParam, $matches))
-            return "!! Invalid command sequence: '$cmdParam' !!";
+        $doIf = false;
 
-        //print_r ($matches);
+        if (trim ($cmdParam) == "::NL_ELSE_FALSE") {
+            // This is the {else} path of a if construction
+            if ($ifConditionDidMatch == false)
+                $doIf = true; // Run the block if
 
-        $comp1 = $this->_getItemValue(trim ($matches[1]), $context);
-        $comp2 = $this->_getItemValue(trim ($matches[3]), $context);
+        } else {
 
-        //decho $comp1 . $comp2;
+            if ( ! preg_match('/([\"\']?.*?[\"\']?)\s*(==|<|>|!=)\s*([\"\']?.*[\"\']?)/i', $cmdParam, $matches)) {
+                return "!! Invalid command sequence: '$cmdParam' !!";
+            }
 
-        $doIf = FALSE;
-        switch ($matches[2]) {
-            case "==":
-                $doIf = ($comp1 == $comp2);
-                break;
-            case "!=":
-                $doIf = ($comp1 != $comp2);
-                break;
-            case "<":
-                $doIf = ($comp1 < $comp2);
-                break;
-            case ">":
-                $doIf = ($comp1 > $comp2);
-                break;
+            //print_r ($matches);
+
+            $comp1 = $this->_getItemValue(trim($matches[1]), $context);
+            $comp2 = $this->_getItemValue(trim($matches[3]), $context);
+
+            //decho $comp1 . $comp2;
+
+
+            switch ($matches[2]) {
+                case "==":
+                    $doIf = ($comp1 == $comp2);
+                    break;
+                case "!=":
+                    $doIf = ($comp1 != $comp2);
+                    break;
+                case "<":
+                    $doIf = ($comp1 < $comp2);
+                    break;
+                case ">":
+                    $doIf = ($comp1 > $comp2);
+                    break;
+            }
         }
 
         if ( ! $doIf)
             return "";
 
+        $ifConditionDidMatch = true; // Skip further else / elseif execution
         $content = $this->_parseBlock($context, $content, $softFail);
         $content = $this->_parseValueOfTags($context, $content, $softFail);
         return $content;
 
     }
 
+    public function _runIfElse ($context, $content, $softFail=TRUE, &$ifConditionDidMatch) {
+        if ($ifConditionDidMatch == true)
+            return "";
+        $ifConditionDidMatch = true; // Skip further else / elseif execution
+        $content = $this->_parseBlock($context, $content, $softFail);
+        $content = $this->_parseValueOfTags($context, $content, $softFail);
+        return $content;
+    }
+
 
     private function _parseBlock ($context, $block, $softFail=TRUE) {
         // (?!\{): Lookahead Regex: Don't touch double {{
-        $result = preg_replace_callback('/\n?\{(?!=)(([a-z]+)[0-9]+)(.*?)\}(.*?)\n?\{\/\1\}/ism',
-            function ($matches) use ($context, $softFail) {
-                $command = $matches[2];
-                $cmdParam = $matches[3];
-                $content = $matches[4];
+        $ifConditionDidMatch = []; // Array with nesting-Levels
+        $result = preg_replace_callback('/\n?\{(?!=)((?<command>[a-z]+)(?<nestingLevel>[0-9]+))(?<cmdParam>.*?)\}(?<content>.*?)\n?\{\/\1\}/ism',
+            function ($matches) use ($context, $softFail, &$ifConditionDidMatch) {
+                $command = $matches["command"];
+                $cmdParam = $matches["cmdParam"];
+                $content = $matches["content"];
+                $nestingLevel = $matches["nestingLevel"];
 
                 switch ($command) {
                     case "for":
                         return $this->_runFor($context, $content, $cmdParam, $softFail);
 
                     case "if":
-                        return $this->_runIf ($context, $content, $cmdParam, $softFail);
+                        $ifConditionDidMatch[$nestingLevel] = false;
+                        return $this->_runIf ($context, $content, $cmdParam, $softFail, $ifConditionDidMatch[$nestingLevel]);
+
 
                     default:
                         return "!! Invalid command: '$command' !!";
@@ -350,7 +389,7 @@ class TextTemplate {
         $text = $this->mTemplateText;
 
         $context = $params;
-
+        $text = $this->_replaceElseIf($text);
         $text = $this->_replaceNestingLevels($text);
 
         $text = $this->_parseBlock($context, $text, $softFail);

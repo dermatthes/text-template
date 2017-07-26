@@ -17,6 +17,10 @@ use Tester\Assert;
 \Tester\Environment::setup();
 
 
+$in = "{ if xyz}{ if zzz}{=value}{ /if}{else}{/if}";
+$tt = new TextTemplate();
+$out = $tt->_replaceElseIf($in);
+Assert::equal("{ if xyz}{ if zzz}{=value}{ /if}{/if}{if ::NL_ELSE_FALSE}{/if}", $out);
 
 $in = "{ if xyz}{ if zzz}{=value}{ /if}{/if}";
 $tt = new TextTemplate();
