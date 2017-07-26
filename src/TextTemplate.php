@@ -98,6 +98,13 @@ class TextTemplate {
                 },
                 $lines[$li]
             );
+            $lines[$li] = preg_replace_callback('/\{else\s*if(.*)\}/im',
+                function ($matches) use (&$nestingIndex, &$indexCounter, &$li) {
+                    print_r ($matches);
+                    return "{/if}{if ::NL_ELSE_FALSE {$matches[1]}}";
+                },
+                $lines[$li]
+            );
 
         }
         return implode ("\n", $lines);
@@ -284,39 +291,52 @@ class TextTemplate {
         //echo $cmdParam;
         $doIf = false;
 
-        if (trim ($cmdParam) == "::NL_ELSE_FALSE") {
+        $cmdParam = trim ($cmdParam);
+        echo "\n+ $cmdParam " . strpos($cmdParam, "::NL_ELSE_FALSE");
+        // Handle {else}{elseif} constructions
+        if ($cmdParam === "::NL_ELSE_FALSE") {
+            echo "ELSE ";
             // This is the {else} path of a if construction
-            if ($ifConditionDidMatch == false)
-                $doIf = true; // Run the block if
+            if ($ifConditionDidMatch == true) {
+                echo "BREAK ELSE";
+                return ""; // Do not run else block
+            }
+            $cmdParam = "TRUE==TRUE";
+        } elseif (strpos($cmdParam, "::NL_ELSE_FALSE") === 0) {
+            echo "ELSEIF ";
+            // This is a {elseif (condition)} block
+            if ($ifConditionDidMatch == true) {
+                echo "BREAK!";
+                return ""; // Do not run ifelse block, if block before succeeded
+            }
 
+            $cmdParam = substr($cmdParam, strlen ("::NL_ELSE_FALSE")+1);
         } else {
+            echo "IF ";
+            // This is the original {if}
+            $ifConditionDidMatch = false;
+        }
 
-            if ( ! preg_match('/([\"\']?.*?[\"\']?)\s*(==|<|>|!=)\s*([\"\']?.*[\"\']?)/i', $cmdParam, $matches)) {
-                return "!! Invalid command sequence: '$cmdParam' !!";
-            }
+        if ( ! preg_match('/([\"\']?.*?[\"\']?)\s*(==|<|>|!=)\s*([\"\']?.*[\"\']?)/i', $cmdParam, $matches)) {
+            return "!! Invalid command sequence: '$cmdParam' !!";
+        }
 
-            //print_r ($matches);
+        $comp1 = $this->_getItemValue(trim($matches[1]), $context);
+        $comp2 = $this->_getItemValue(trim($matches[3]), $context);
 
-            $comp1 = $this->_getItemValue(trim($matches[1]), $context);
-            $comp2 = $this->_getItemValue(trim($matches[3]), $context);
-
-            //decho $comp1 . $comp2;
-
-
-            switch ($matches[2]) {
-                case "==":
-                    $doIf = ($comp1 == $comp2);
-                    break;
-                case "!=":
-                    $doIf = ($comp1 != $comp2);
-                    break;
-                case "<":
-                    $doIf = ($comp1 < $comp2);
-                    break;
-                case ">":
-                    $doIf = ($comp1 > $comp2);
-                    break;
-            }
+        switch ($matches[2]) {
+            case "==":
+                $doIf = ($comp1 == $comp2);
+                break;
+            case "!=":
+                $doIf = ($comp1 != $comp2);
+                break;
+            case "<":
+                $doIf = ($comp1 < $comp2);
+                break;
+            case ">":
+                $doIf = ($comp1 > $comp2);
+                break;
         }
 
         if ( ! $doIf)
@@ -339,24 +359,25 @@ class TextTemplate {
     }
 
 
+    private $ifConditionMatch = [];
+
     private function _parseBlock ($context, $block, $softFail=TRUE) {
         // (?!\{): Lookahead Regex: Don't touch double {{
-        $ifConditionDidMatch = []; // Array with nesting-Levels
+
         $result = preg_replace_callback('/\n?\{(?!=)((?<command>[a-z]+)(?<nestingLevel>[0-9]+))(?<cmdParam>.*?)\}(?<content>.*?)\n?\{\/\1\}/ism',
-            function ($matches) use ($context, $softFail, &$ifConditionDidMatch) {
+            function ($matches) use ($context, $softFail) {
                 $command = $matches["command"];
                 $cmdParam = $matches["cmdParam"];
                 $content = $matches["content"];
                 $nestingLevel = $matches["nestingLevel"];
-
+                print_r ($this->ifConditionMatch);
+                echo "\n> command $nestingLevel: A $command $cmdParam";
                 switch ($command) {
                     case "for":
                         return $this->_runFor($context, $content, $cmdParam, $softFail);
 
                     case "if":
-                        $ifConditionDidMatch[$nestingLevel] = false;
-                        return $this->_runIf ($context, $content, $cmdParam, $softFail, $ifConditionDidMatch[$nestingLevel]);
-
+                        return $this->_runIf ($context, $content, $cmdParam, $softFail, $this->ifConditionMatch[$nestingLevel]);
 
                     default:
                         return "!! Invalid command: '$command' !!";
@@ -389,9 +410,9 @@ class TextTemplate {
         $text = $this->mTemplateText;
 
         $context = $params;
+
         $text = $this->_replaceElseIf($text);
         $text = $this->_replaceNestingLevels($text);
-
         $text = $this->_parseBlock($context, $text, $softFail);
         $result = $this->_parseValueOfTags($context, $text, $softFail);
 
