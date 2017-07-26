@@ -1,0 +1,12 @@
+1: Start
+{if boolVal == TRUE}
+2: Boolean is true
+{else}
+3: Some Line of Code
+{/if}
+{if boolVal == FALSE}
+4: Boolean is true
+{else}
+5: Some Line of Code
+{/if}
+6: Some other text
