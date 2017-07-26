@@ -1,91 +1,19 @@
 <?xml version="1.0"  encoding="UTF-8" ?>
-<!--
-    $Id$
+<project  name="text-template" basedir="." default="">
 
-
--->
-
-<project  name="text-template" basedir="." default="main">
-    <tstamp>
-        <!-- Format is, e.g. Sat, 03 Oct 2009, 16:31 -->
-        <format property="buildtime" pattern=" %d.%m.%Y %H:%M"/>
-    </tstamp>
-    <tstamp>
-        <format property="buildts" pattern="%Y%m%d"/>
-    </tstamp>
-
-    <target name="clean">
-        <delete file="_build/text-template.phar.php"/>
-        <delete dir="./_stage"/>
+    <target name="composer update">
+        <!-- Phing hat ein eigenes PHPUNit-Klasse: Aber: Process-isolation klappt nicht. D.h. der Build von Libraries schlägt fehl -->
+        <exec dir="." logoutput="true" checkreturn="true" command="composer update"/>
     </target>
 
-
-    <target name="phpunit">
-        <echo msg="Running Unit Tests in /test with bootstrap /test/boostrap.inc.php" />
-        <phpunit haltonfailure="true" printsummary="true" bootstrap="test/bootstrap.inc.php">
-            <batchtest>
-                <fileset dir="test/">
-                    <include name="**/*Test.php" />
-                    <include name="**/*Test.class.php" />
-                </fileset>
-            </batchtest>
-        </phpunit>
+    <target name="composer update --prefer-source">
+        <!-- Phing hat ein eigenes PHPUNit-Klasse: Aber: Process-isolation klappt nicht. D.h. der Build von Libraries schlägt fehl -->
+        <exec dir="." logoutput="true" checkreturn="true" command="composer update --prefer-source"/>
     </target>
 
-
-    <target name="copy_main_files_to_stage" depends="clean">
-        <mkdir dir="./_stage/text-template"/>
-        <copy todir="./_stage/text-template">
-            <fileset dir="./src/">
-                <include name="**"/>
-            </fileset>
-            <fileset dir="./">
-                <include name="README.md"/>
-                <include name="LICENSE"/>
-            </fileset>
-        </copy>
+    <target name="unit-tests">
+        <!-- Phing hat ein eigenes PHPUNit-Klasse: Aber: Process-isolation klappt nicht. D.h. der Build von Libraries schlägt fehl -->
+        <exec dir="." logoutput="true" checkreturn="true" command="./vendor/bin/tester -p /usr/bin/php -s ./test/"/>
     </target>
-
-    <target name="build_src_tarball" depends="copy_main_files_to_stage, phpunit">
-        <mkdir dir="./_build"/>
-        <delete file="_build/text-template.recent.src.tar.gz"/>
-
-        <tar compression="gzip" destfile="_build/text-template.recent.src.tar.gz">
-            <fileset dir="./_stage/">
-                <filename name="**" />
-            </fileset>
-        </tar>
-    </target>
-
-
-
-    <target name="build_phar" depends="copy_main_files_to_stage, phpunit">
-        <mkdir dir="./_build"/>
-        <pharpackage destfile="./_build/text-template.phar.php" basedir="./_stage/text-template" stub="./xsrc/pharStub.php">
-            <fileset dir="./_stage/text-template">
-                <include name="**" />
-            </fileset>
-        </pharpackage>
-    </target>
-
-
-    <target name="build_phar_gzip" depends="build_phar">
-        <delete file="_build/text-template.recent.phar.php.gz"/>
-        <tar compression="gzip" destfile="_build/text-template.recent.phar.php.gz">
-            <fileset dir="./_build/">
-                <filename name="text-template.phar.php" />
-            </fileset>
-        </tar>
-    </target>
-
-
-    <target name="main" depends="build_phar_gzip, build_src_tarball" description="Generate local build from sources build directory">
-
-        <!-- <copy file="_build/text-template.recent.phar.php.gz" tofile="_build/text-template.${buildts}.phar.php.gz" /> -->
-        <phingcall target="clean"/>
-    </target>
-
-
-
 
 </project>
