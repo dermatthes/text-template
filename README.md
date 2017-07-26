@@ -3,7 +3,7 @@
 [![Downloads this Month](https://img.shields.io/packagist/dm/text/template.svg)](https://packagist.org/packages/text/template)
 [<img src="https://travis-ci.org/dermatthes/text-template.svg">](https://travis-ci.org/dermatthes/text-template)
 [![Latest Stable Version](https://poser.pugx.org/text/template/v/stable)](https://github.com/dermatthes/text-template/releases)
-[![Supports PHP 7.0+](https://raw.githubusercontent.com/xp-framework/web/master/static/php-7_0plus.png)](http://php.net/)
+[![Supports PHP 5.4+](https://raw.githubusercontent.com/xp-framework/web/master/static/php-5_4plus.png)](http://php.net/)
 
 
 
