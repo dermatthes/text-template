@@ -36,9 +36,9 @@ use TextTemplate. It's just one class.
 
 * __Git externals:__ Clone this repository and add this as external to your project.
 
-* __Download gzip'ed phar:__ If you like downloads we offer you a gzip'ed phar archive: <https://github.com/dermatthes/text-template/blob/master/_build/text-template.recent.phar.php.gz>
+* ~~__Download gzip'ed phar:__-- If you like downloads we offer you a gzip'ed phar archive: <https://github.com/dermatthes/text-template/blob/master/_build/text-template.recent.phar.php.gz>~~ (Abandoned: Juli/2017 - please use composer or copy the source code)
 
-* __Download source tar:__ <https://raw.githubusercontent.com/dermatthes/text-template/master/_build/text-template.recent.src.tar.gz>
+* ~~__Download source tar:__ <https://raw.githubusercontent.com/dermatthes/text-template/master/_build/text-template.recent.src.tar.gz>~~ (Abandoned: Juli/2017 - please use composer or copy the source code)
 
 _TextTemplate uses Phing to build the phar-archives and gzip them. Just execute main-target in build.xml to build your own version_
 
