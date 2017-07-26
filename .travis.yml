@@ -39,7 +39,7 @@ before_install:
   - composer self-update
 
 install:
-  - composer install --no-interaction --prefer-source
+  - composer update --no-interaction --prefer-source
 
 
 script:
