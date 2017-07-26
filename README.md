@@ -79,9 +79,6 @@ use TextTemplate. It's just one class.
 _TextTemplate uses Phing to build the phar-archives and gzip them. Just execute main-target in build.xml to build your own version_
 
 
-
-
-
 ## Value injection
 
 Use the value Tag
@@ -96,57 +93,7 @@ To access array elements or objects use "." to access sub-elements:
  
  ```
  {= users.0.name}
- ```
-
-
-### Adding Filters
-
-You can add custom filters or overwrite own filters.
-
-Adding a new Filter:
-
-```php
-$tt->addFilter ("currency", function ($input) {
-    return number_format ($input, 2, ",", ".");
-});
 ```
-
-Use this filter inside your template
-
-```
-{= someVariable | currency }
-```
-
-### Predefined Filters
-
-| Name           | Description                                |
-|----------------|--------------------------------------------|
-| raw            | Display raw data (skip default escaping)   |
-| singleLine     | Transform Line-breaks to spaces            |
-| inivalue       | like singleLine including addslashes()     |
-| html           | htmlspecialchars()                         |
-
-
-### Replacing the default-Filter
-By default and for security reason all values will be escaped using the "_DEFAULT_"-Filter. (except if
-"raw" was selected within the filter section)
-
-If you, for some reason, want to disable this functionality or change the escape function you can 
-overwrite the _DEFAULT_-Filter:
-
-```php
-$tt->addFilter ("_DEFAULT_", function ($input) {
-    return strip_tags ($input);
-});
-```
-
-or
-
-```php
-$tt->setDefaultFilter("singleLine");
-```
-
-This example will replace the htmlspecialchars() escaper by the strip_tags() function.
 
 ## Loops
 
@@ -200,6 +147,58 @@ Hello Moon
 Goodbye World
 {/if}
 ```
+
+### Adding Filters
+
+You can add custom filters or overwrite own filters.
+
+Adding a new Filter:
+
+```php
+$tt->addFilter ("currency", function ($input) {
+    return number_format ($input, 2, ",", ".");
+});
+```
+
+Use this filter inside your template
+
+```
+{= someVariable | currency }
+```
+
+### Predefined Filters
+
+| Name           | Description                                |
+|----------------|--------------------------------------------|
+| raw            | Display raw data (skip default escaping)   |
+| singleLine     | Transform Line-breaks to spaces            |
+| inivalue       | like singleLine including addslashes()     |
+| html           | htmlspecialchars()                         |
+
+
+### Replacing the default-Filter
+By default and for security reason all values will be escaped using the "_DEFAULT_"-Filter. (except if
+"raw" was selected within the filter section)
+
+If you, for some reason, want to disable this functionality or change the escape function you can 
+overwrite the _DEFAULT_-Filter:
+
+```php
+$tt->addFilter ("_DEFAULT_", function ($input) {
+    return strip_tags ($input);
+});
+```
+
+or
+
+```php
+$tt->setDefaultFilter("singleLine");
+```
+
+This example will replace the htmlspecialchars() escaper by the strip_tags() function.
+
+
+
 
 ## Debugging the Parameters
 
