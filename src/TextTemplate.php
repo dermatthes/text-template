@@ -92,16 +92,16 @@ class TextTemplate {
     public function _replaceElseIf ($input) {
         $lines = explode("\n", $input);
         for ($li=0; $li < count ($lines); $li++) {
-            $lines[$li] = preg_replace_callback('/\{else\}/im',
+            $lines[$li] = preg_replace_callback('/\{else(?<nestingLevel>[0-9]+)\}/im',
                 function ($matches) use (&$nestingIndex, &$indexCounter, &$li) {
-                    return "{/if}{if ::NL_ELSE_FALSE}";
+                    return "{/if{$matches["nestingLevel"]}}{if{$matches["nestingLevel"]} ::NL_ELSE_FALSE}";
                 },
                 $lines[$li]
             );
-            $lines[$li] = preg_replace_callback('/\{else\s*if(.*)\}/im',
+            $lines[$li] = preg_replace_callback('/\{elseif(?<nestingLevel>[0-9]+)(?<params>.*)\}/im',
                 function ($matches) use (&$nestingIndex, &$indexCounter, &$li) {
-                    print_r ($matches);
-                    return "{/if}{if ::NL_ELSE_FALSE {$matches[1]}}";
+
+                    return "{/if{$matches["nestingLevel"]}}{if{$matches["nestingLevel"]} ::NL_ELSE_FALSE {$matches["params"]}}";
                 },
                 $lines[$li]
             );
@@ -142,6 +142,16 @@ class TextTemplate {
                     $slash = $matches[1];
                     $tag = $matches[2];
                     $rest = $matches[3];
+                    if ($tag == "else" || $tag == "elseif"){
+
+                        if ( ! isset ($nestingIndex["if"]))
+                            throw new \Exception("Line {$li}: 'if' Opening tag not found for else/elseif tag: '{$matches[0]}'");
+                        if (count ($nestingIndex["if"]) == 0)
+                            throw new \Exception("Line {$li}: Nesting level does not match for closing tag: '{$matches[0]}'");
+                        $curIndex = $nestingIndex["if"][count ($nestingIndex["if"])-1];
+                        $out =  "{" . $tag . $curIndex[0] . rtrim($rest) . "}";
+                        return $out;
+                    }
                     if ($slash == "") {
                         if ( ! isset ($nestingIndex[$tag]))
                             $nestingIndex[$tag] = [];
@@ -411,8 +421,10 @@ class TextTemplate {
 
         $context = $params;
 
-        $text = $this->_replaceElseIf($text);
+
         $text = $this->_replaceNestingLevels($text);
+        $text = $this->_replaceElseIf($text);
+
         $text = $this->_parseBlock($context, $text, $softFail);
         $result = $this->_parseValueOfTags($context, $text, $softFail);
 
