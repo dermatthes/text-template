@@ -1,4 +1,4 @@
-# Text-Template (Single Class, IF/ELSEIF/ELSE, FOR, FILTERS)
+# Text-Template (Single Class, IF, FOR, FILTERS)
 
 [![Downloads this Month](https://img.shields.io/packagist/dm/text/template.svg)](https://packagist.org/packages/text/template)
 [<img src="https://travis-ci.org/dermatthes/text-template.svg">](https://travis-ci.org/dermatthes/text-template)
