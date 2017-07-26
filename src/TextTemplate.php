@@ -371,6 +371,7 @@ class TextTemplate {
 
         $result = preg_replace_callback('/\n?\{(?!=)((?<command>[a-z]+)(?<nestingLevel>[0-9]+))(?<cmdParam>.*?)\}(?<content>.*?)\n?\{\/\1\}/ism',
             function ($matches) use ($context, $softFail) {
+
                 $command = $matches["command"];
                 $cmdParam = $matches["cmdParam"];
                 $content = $matches["content"];
@@ -381,7 +382,8 @@ class TextTemplate {
                         return $this->_runFor($context, $content, $cmdParam, $softFail);
 
                     case "if":
-                        return $this->_runIf ($context, $content, $cmdParam, $softFail, $this->ifConditionMatch[$nestingLevel]);
+                        $ifConditionDidMatch[$nestingLevel] = false;
+                        return $this->_runIf ($context, $content, $cmdParam, $softFail, $ifConditionDidMatch[$nestingLevel]);
 
                     default:
                         return "!! Invalid command: '$command' !!";
@@ -414,7 +416,7 @@ class TextTemplate {
         $text = $this->mTemplateText;
 
         $context = $params;
-
+        $text = $this->_replaceElseIf($text);
         $text = $this->_replaceNestingLevels($text);
         $text = $this->_replaceElseIf($text);
 
