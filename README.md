@@ -11,10 +11,10 @@
 ```
 
 
-Single-Class PHP5 template engine with support for if/loops/filters
+Single-Class PHP5/7 template engine with support for if/loops/filters
 
 - __Easy__: No compiling or caching - just parse `input string` into `output string`
-- __Secure__: No eval(); no code is generated. No filesystem access needed.
+- __Secure__: No eval(); no code is generated. No filesystem access needed. Unit-tested.
 - __Features__: Nested loops, if/elseif/else, custom filters, auto-escaping
 
 It is aimed to be a small string Template-Engine to meet e-Mailing or small html-Template demands. It is not meant
