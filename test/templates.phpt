@@ -3,7 +3,7 @@ namespace Leuffen\TextTemplate;
 
 require __DIR__ . "/../vendor/autoload.php";
 
-use de\leuffen\text_template\TextTemplate;
+
 use Tester\Assert;
 
 /**

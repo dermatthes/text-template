@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2015 Matthias Leuffen, Aachen, Germany
+ * Copyright (c) 2015-2017 Matthias Leuffen, Aachen, Germany
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,11 @@
  *
  */
 
-namespace de\leuffen\text_template;
+namespace Leuffen\TextTemplate;
 
 class TextTemplate {
 
-    const VERSION = "1.0.1";
+    const VERSION = "2.0.0";
 
 
     private $mTemplateText;

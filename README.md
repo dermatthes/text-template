@@ -1,4 +1,4 @@
-# Text-Template
+# Text-Template (Single Class, IF/ELSEIF/ELSE, FOR, FILTERS)
 
 [![Downloads this Month](https://img.shields.io/packagist/dm/text/template.svg)](https://packagist.org/packages/text/template)
 [<img src="https://travis-ci.org/dermatthes/text-template.svg">](https://travis-ci.org/dermatthes/text-template)
@@ -6,8 +6,16 @@
 [![Supports PHP 5.4+](https://raw.githubusercontent.com/xp-framework/web/master/static/php-5_4plus.png)](http://php.net/)
 [![Supports PHP 7.0+](https://raw.githubusercontent.com/xp-framework/web/master/static/php-7_0plus.png)](http://php.net/)
 
+```
+{if user.searching=='template'}This is for you {= user.name }{else}Welcome {= user.name }{/if}
+```
+
 
 Single-Class PHP5 template engine with support for if/loops/filters
+
+- __Easy__: No compiling or caching - just parse `input string` into `output string`
+- __Secure__: No eval(); no code is generated. No filesystem access needed.
+- __Features__: Nested loops, if/elseif/else, custom filters, auto-escaping
 
 It is aimed to be a small string Template-Engine to meet e-Mailing or small html-Template demands. It is not meant
 to be a replacement for pre-compiled full featured Template-Engines like Smarty or Twig.

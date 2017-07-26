@@ -1,18 +1,16 @@
 {
     "name": "text/template",
     "type": "library",
-    "description": "Text template with repeat",
-    "keywords": ["YAML", "framework", "php"],
+    "description": "Simple and secure template-engine (Twig-like syntax) with nested if/elseif/else, loops, filters",
+    "keywords": ["text", "template", "render", "mail", "if", "for", "loop", "filter", "smarty", "twig"],
     "homepage": "http://github.com/dermatthes/text-template",
-    "license": "Proprietary",
+    "license": "MIT",
     "authors": [
         {
             "name": "Matthias Leuffen",
             "email": "matthes@leuffen.de"
         }
     ],
-
-
     "require": {
         "php": ">=5.4"
     },
@@ -21,7 +19,7 @@
     },
     "autoload": {
         "psr-4": {
-            "de\\leuffen\\text_template\\": "src/"
+            "Leuffen\\TextTemplate\\": "src/"
         }
     },
     "minimum-stability": "dev"
