@@ -92,9 +92,16 @@ class TextTemplate {
     public function _replaceElseIf ($input) {
         $lines = explode("\n", $input);
         for ($li=0; $li < count ($lines); $li++) {
-            $lines[$li] = preg_replace_callback('/\{else\}/im',
+            $lines[$li] = preg_replace_callback('/\{else(?<nestingLevel>[0-9]+)\}/im',
                 function ($matches) use (&$nestingIndex, &$indexCounter, &$li) {
-                    return "{/if}{if ::NL_ELSE_FALSE}";
+                    return "{/if{$matches["nestingLevel"]}}{if{$matches["nestingLevel"]} ::NL_ELSE_FALSE}";
+                },
+                $lines[$li]
+            );
+            $lines[$li] = preg_replace_callback('/\{elseif(?<nestingLevel>[0-9]+)(?<params>.*)\}/im',
+                function ($matches) use (&$nestingIndex, &$indexCounter, &$li) {
+
+                    return "{/if{$matches["nestingLevel"]}}{if{$matches["nestingLevel"]} ::NL_ELSE_FALSE {$matches["params"]}}";
                 },
                 $lines[$li]
             );
@@ -135,6 +142,16 @@ class TextTemplate {
                     $slash = $matches[1];
                     $tag = $matches[2];
                     $rest = $matches[3];
+                    if ($tag == "else" || $tag == "elseif"){
+
+                        if ( ! isset ($nestingIndex["if"]))
+                            throw new \Exception("Line {$li}: 'if' Opening tag not found for else/elseif tag: '{$matches[0]}'");
+                        if (count ($nestingIndex["if"]) == 0)
+                            throw new \Exception("Line {$li}: Nesting level does not match for closing tag: '{$matches[0]}'");
+                        $curIndex = $nestingIndex["if"][count ($nestingIndex["if"])-1];
+                        $out =  "{" . $tag . $curIndex[0] . rtrim($rest) . "}";
+                        return $out;
+                    }
                     if ($slash == "") {
                         if ( ! isset ($nestingIndex[$tag]))
                             $nestingIndex[$tag] = [];
@@ -284,39 +301,47 @@ class TextTemplate {
         //echo $cmdParam;
         $doIf = false;
 
-        if (trim ($cmdParam) == "::NL_ELSE_FALSE") {
+        $cmdParam = trim ($cmdParam);
+        //echo "\n+ $cmdParam " . strpos($cmdParam, "::NL_ELSE_FALSE");
+        // Handle {else}{elseif} constructions
+        if ($cmdParam === "::NL_ELSE_FALSE") {
             // This is the {else} path of a if construction
-            if ($ifConditionDidMatch == false)
-                $doIf = true; // Run the block if
+            if ($ifConditionDidMatch == true) {
+                return ""; // Do not run else block
+            }
+            $cmdParam = "TRUE==TRUE";
+        } elseif (strpos($cmdParam, "::NL_ELSE_FALSE") === 0) {
+            // This is a {elseif (condition)} block
+            if ($ifConditionDidMatch == true) {
+                return ""; // Do not run ifelse block, if block before succeeded
+            }
 
+            $cmdParam = substr($cmdParam, strlen ("::NL_ELSE_FALSE")+1);
         } else {
+            // This is the original {if}
+            $ifConditionDidMatch = false;
+        }
 
-            if ( ! preg_match('/([\"\']?.*?[\"\']?)\s*(==|<|>|!=)\s*([\"\']?.*[\"\']?)/i', $cmdParam, $matches)) {
-                return "!! Invalid command sequence: '$cmdParam' !!";
-            }
+        if ( ! preg_match('/([\"\']?.*?[\"\']?)\s*(==|<|>|!=)\s*([\"\']?.*[\"\']?)/i', $cmdParam, $matches)) {
+            return "!! Invalid command sequence: '$cmdParam' !!";
+        }
 
-            //print_r ($matches);
+        $comp1 = $this->_getItemValue(trim($matches[1]), $context);
+        $comp2 = $this->_getItemValue(trim($matches[3]), $context);
 
-            $comp1 = $this->_getItemValue(trim($matches[1]), $context);
-            $comp2 = $this->_getItemValue(trim($matches[3]), $context);
-
-            //decho $comp1 . $comp2;
-
-
-            switch ($matches[2]) {
-                case "==":
-                    $doIf = ($comp1 == $comp2);
-                    break;
-                case "!=":
-                    $doIf = ($comp1 != $comp2);
-                    break;
-                case "<":
-                    $doIf = ($comp1 < $comp2);
-                    break;
-                case ">":
-                    $doIf = ($comp1 > $comp2);
-                    break;
-            }
+        switch ($matches[2]) {
+            case "==":
+                $doIf = ($comp1 == $comp2);
+                break;
+            case "!=":
+                $doIf = ($comp1 != $comp2);
+                break;
+            case "<":
+                $doIf = ($comp1 < $comp2);
+                break;
+            case ">":
+                $doIf = ($comp1 > $comp2);
+                break;
         }
 
         if ( ! $doIf)
@@ -339,11 +364,13 @@ class TextTemplate {
     }
 
 
+    private $ifConditionMatch = [];
+
     private function _parseBlock ($context, $block, $softFail=TRUE) {
         // (?!\{): Lookahead Regex: Don't touch double {{
-        $ifConditionDidMatch = []; // Array with nesting-Levels
+
         $result = preg_replace_callback('/\n?\{(?!=)((?<command>[a-z]+)(?<nestingLevel>[0-9]+))(?<cmdParam>.*?)\}(?<content>.*?)\n?\{\/\1\}/ism',
-            function ($matches) use ($context, $softFail, &$ifConditionDidMatch) {
+            function ($matches) use ($context, $softFail) {
                 $command = $matches["command"];
                 $cmdParam = $matches["cmdParam"];
                 $content = $matches["content"];
@@ -354,9 +381,7 @@ class TextTemplate {
                         return $this->_runFor($context, $content, $cmdParam, $softFail);
 
                     case "if":
-                        $ifConditionDidMatch[$nestingLevel] = false;
-                        return $this->_runIf ($context, $content, $cmdParam, $softFail, $ifConditionDidMatch[$nestingLevel]);
-
+                        return $this->_runIf ($context, $content, $cmdParam, $softFail, $this->ifConditionMatch[$nestingLevel]);
 
                     default:
                         return "!! Invalid command: '$command' !!";
@@ -389,8 +414,9 @@ class TextTemplate {
         $text = $this->mTemplateText;
 
         $context = $params;
-        $text = $this->_replaceElseIf($text);
+
         $text = $this->_replaceNestingLevels($text);
+        $text = $this->_replaceElseIf($text);
 
         $text = $this->_parseBlock($context, $text, $softFail);
         $result = $this->_parseValueOfTags($context, $text, $softFail);

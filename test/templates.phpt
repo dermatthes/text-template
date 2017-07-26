@@ -16,16 +16,28 @@ use Tester\Assert;
 
 \Tester\Environment::setup();
 
+$in = "{ if xyz}{ if zzz}{=value}{ /if}{else}{/if}";
+$tt = new TextTemplate();
+$out = $tt->_replaceNestingLevels($in);
+Assert::equal("{if0 xyz}{if1 zzz}{=value}{/if1}{else0}{/if0}", $out);
 
 $in = "{ if xyz}{ if zzz}{=value}{ /if}{else}{/if}";
 $tt = new TextTemplate();
 $out = $tt->_replaceElseIf($in);
 Assert::equal("{ if xyz}{ if zzz}{=value}{ /if}{/if}{if ::NL_ELSE_FALSE}{/if}", $out);
 
-$in = "{ if xyz}{ if zzz}{=value}{ /if}{/if}";
+$in = "{ if0 xyz}{ if1 zzz}{=value}{ /if1}{else0}{/if0}";
 $tt = new TextTemplate();
-$out = $tt->_replaceNestingLevels($in);
-Assert::equal("{if0 xyz}{if1 zzz}{=value}{/if1}{/if0}", $out);
+$out = $tt->_replaceElseIf($in);
+Assert::equal("{ if0 xyz}{ if1 zzz}{=value}{ /if1}{/if0}{if0 ::NL_ELSE_FALSE}{/if0}", $out);
+
+$in = "{ if0 xyz}{ if1 zzz}{=value}{ /if1}{elseif0 bbb}{/if0}";
+$tt = new TextTemplate();
+$out = $tt->_replaceElseIf($in);
+Assert::equal("{ if0 xyz}{ if1 zzz}{=value}{ /if1}{/if0}{if0 ::NL_ELSE_FALSE  bbb}{/if0}", $out);
+
+
+
 
 
 
