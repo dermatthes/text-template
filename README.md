@@ -21,6 +21,28 @@ code is eval'ed. So TextTemplate should be more secure than Smarty or Twig by de
 
 TextTemplate supports infinite-nested loops and sequences.
 
+## Basic Example
+```php
+
+// 1. Define the Template
+$tplStr = <<<EOT
+Hello World {= name }
+{if name == "Matthias"}
+Hallo {= name | capitalize }
+{/if}
+EOT;
+
+// 2. Define the Data for the Template
+$data = [
+    "name" => "Matthias"
+];
+
+// 3. Parse
+$tt = new TextTemplate($tplStr);
+echo $tt->apply ($data);
+```
+
+
 ## Install
 
 I prefer and recommend using [composer](http://getcomposer.com):
@@ -42,27 +64,6 @@ use TextTemplate. It's just one class.
 
 _TextTemplate uses Phing to build the phar-archives and gzip them. Just execute main-target in build.xml to build your own version_
 
-
-## Basic Example
-```php
-
-// 1. Define the Template
-$tplStr = <<<EOT
-Hello World {= name }
-{if name == "Matthias"}
-Hallo {= name | capitalize }
-{/if}
-EOT;
-
-// 2. Define the Data for the Template
-$data = [
-    "name" => "Matthias"
-];
-
-// 3. Parse
-$tt = new TextTemplate($tplStr);
-echo $tt->apply ($data);
-```
 
 
 
