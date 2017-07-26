@@ -21,6 +21,10 @@ $tt = new TextTemplate();
 $out = $tt->_replaceNestingLevels($in);
 Assert::equal("{if0 xyz}{if1 zzz}{=value}{/if1}{else0}{/if0}", $out);
 
+$in = "{ if xyz}{ if zzz}{=value}{ /if}{else}{/if}";
+$tt = new TextTemplate();
+$out = $tt->_replaceElseIf($in);
+Assert::equal("{ if xyz}{ if zzz}{=value}{ /if}{/if}{if ::NL_ELSE_FALSE}{/if}", $out);
 
 $in = "{ if0 xyz}{ if1 zzz}{=value}{ /if1}{else0}{/if0}";
 $tt = new TextTemplate();
