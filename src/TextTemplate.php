@@ -223,12 +223,13 @@ class TextTemplate {
             throw new \Exception("Filter '$filterName' not defined");
         $fn = $this->mFilter[$filterName];
 
-        if (PHP_VERSION < "5.6") {
-            array_unshift($filterParameters, $value);
-            return call_user_func_array($fn, $filterParameters);
-        } else {
-            return $fn($value, ...$filterParameters);
-        }
+
+        array_unshift($filterParameters, $value);
+        return call_user_func_array($fn, $filterParameters);
+
+        // Change to variable-unpacking, when support for php5.4 ends:
+        // return $fn($value, ...$filterParameters);
+
     }
 
 
