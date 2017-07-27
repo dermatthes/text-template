@@ -36,15 +36,8 @@ class TextTemplate {
 
     const VERSION = "2.0.0";
 
-
     private $mTemplateText;
     private $mFilter = [];
-    private $mConf = [
-        "varStartTag" => "{=",
-        "varEndTag" => "}",
-        "comStartTag" => "{",
-        "comEndTag" => "}"
-    ];
 
     public function __construct ($text="") {
         $this->mTemplateText = $text;
