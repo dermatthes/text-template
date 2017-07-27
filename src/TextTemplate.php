@@ -210,8 +210,6 @@ class TextTemplate {
         return $value;
     }
 
-
-
     private function _parseValueOfTags ($context, $block, $softFail=TRUE) {
         $result = preg_replace_callback ("/\\{=(.+?)\\}/im",
             function ($_matches) use ($softFail, $context) {
