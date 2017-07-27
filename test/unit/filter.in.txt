@@ -1,0 +1,5 @@
+#1 default      : {= str}
+#2 raw          : {= str | raw}
+#3 singleLine   : {= strMultiLine | singleLine }
+#4 inivalue     : {= str | inivalue }
+#5 html         : {= str | html }
