@@ -354,16 +354,6 @@ class TextTemplate {
 
     }
 
-    public function _runIfElse ($context, $content, $softFail=TRUE, &$ifConditionDidMatch) {
-        if ($ifConditionDidMatch == true)
-            return "";
-        $ifConditionDidMatch = true; // Skip further else / elseif execution
-        $content = $this->_parseBlock($context, $content, $softFail);
-        $content = $this->_parseValueOfTags($context, $content, $softFail);
-        return $content;
-    }
-
-
     private $ifConditionMatch = [];
 
     private function _parseBlock ($context, $block, $softFail=TRUE) {
