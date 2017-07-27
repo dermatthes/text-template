@@ -229,12 +229,14 @@ And we got quite good results:
 
 
 
-## Contributing
+## Contributing, Bug-Reports, Enhancements
 
-If you want to contribute, please send your Merge-Request or open
-a gitlab ticket.
+If you want to contribute, please send your Pull-Request or open
+a github issue.
 
-- __Bugs & Feature-Request:__ [GitHub Tickets](https://github.com/dermatthes/text-template/issues)
+- __Bugs & Feature-Request:__ [GitHub Issues](https://github.com/dermatthes/text-template/issues)
+
+__Keeping the tests green__: Please see / provide unit-tests. This project uses `nette/tester` for unit-testing.
 
 
 ## About
