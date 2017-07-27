@@ -155,10 +155,16 @@ You can add custom filters or overwrite own filters.
 Adding a new Filter:
 
 ```php
-$tt->addFilter ("currency", function ($input) {
-    return number_format ($input, 2, ",", ".");
+$tt->addFilter ("currency", function ($input, $decimals=2, $decSeparator=",", $thounsandsSeparator=".") {
+    return number_format ($input, $decimals, $decSeparator, $thousandsSeparator);
 });
 ```
+Call the filter with parameters (parameter-separator `:`):
+
+```
+{= variable | currency:2:,:. }
+```
+
 
 Use this filter inside your template
 
