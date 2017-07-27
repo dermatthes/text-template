@@ -48,6 +48,10 @@ class TextTemplate {
         $this->mFilter["raw"] = function ($input) { return $input; };
         $this->mFilter["singleLine"] = function ($input) { return str_replace("\n", " ", $input); };
         $this->mFilter["inivalue"] = function ($input) { return addslashes(str_replace("\n", " ", $input)); };
+
+        $this->mFilter["fixedLength"] = function ($input, $length, $padChar=" ") {
+            return str_pad(substr($input, 0, $length), $length, $padChar);
+        };
     }
 
     /**
@@ -210,6 +214,19 @@ class TextTemplate {
         return $value;
     }
 
+
+    private function _applyFilter ($filterNameAndParams, $value) {
+        $filterParameters = explode(":", $filterNameAndParams);
+        $filterName = array_shift($filterParameters);
+
+        if ( ! isset ($this->mFilter[$filterName]))
+            throw new \Exception("Filter '$filterName' not defined");
+        $fn = $this->mFilter[$filterName];
+
+        return $fn($value, ...$filterParameters);
+    }
+
+
     private function _parseValueOfTags ($context, $block, $softFail=TRUE) {
         $result = preg_replace_callback ("/\\{=(.+?)\\}/im",
             function ($_matches) use ($softFail, $context) {
@@ -231,10 +248,7 @@ class TextTemplate {
                 }
 
                 foreach ($chain as $curName) {
-                    if ( ! isset ($this->mFilter[$curName]))
-                        throw new \Exception("Filter '$curName' not defined");
-                    $fn = $this->mFilter[$curName];
-                    $value = $fn($value);
+                    $value = $this->_applyFilter($curName, $value);
                 }
 
                 return $value;

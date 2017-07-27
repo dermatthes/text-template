@@ -174,6 +174,7 @@ Use this filter inside your template
 | singleLine     | Transform Line-breaks to spaces            |
 | inivalue       | like singleLine including addslashes()     |
 | html           | htmlspecialchars()                         |
+| fixedLength:<length>:<pad_char: | Pad / shrink the output to <length> characters |
 
 
 ### Replacing the default-Filter
