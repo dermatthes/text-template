@@ -223,7 +223,12 @@ class TextTemplate {
             throw new \Exception("Filter '$filterName' not defined");
         $fn = $this->mFilter[$filterName];
 
-        return $fn($value, ...$filterParameters);
+        if (PHP_VERSION < "5.6") {
+            array_unshift($filterParameters, $value);
+            return call_user_func_array($fn, $filterParameters);
+        } else {
+            return $fn($value, ...$filterParameters);
+        }
     }
 
 
