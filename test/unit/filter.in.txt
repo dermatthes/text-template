@@ -3,3 +3,5 @@
 #3 singleLine   : {= strMultiLine | singleLine }
 #4 inivalue     : {= str | inivalue }
 #5 html         : {= str | html }
+#6a fixedLength : {= str | fixedLength:2:+: }
+#6b fixedLength : {= str | fixedLength:30:+: }

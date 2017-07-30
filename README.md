@@ -155,10 +155,16 @@ You can add custom filters or overwrite own filters.
 Adding a new Filter:
 
 ```php
-$tt->addFilter ("currency", function ($input) {
-    return number_format ($input, 2, ",", ".");
+$tt->addFilter ("currency", function ($input, $decimals=2, $decSeparator=",", $thounsandsSeparator=".") {
+    return number_format ($input, $decimals, $decSeparator, $thousandsSeparator);
 });
 ```
+Call the filter with parameters (parameter-separator `:`):
+
+```
+{= variable | currency:2:,:. }
+```
+
 
 Use this filter inside your template
 
@@ -174,6 +180,7 @@ Use this filter inside your template
 | singleLine     | Transform Line-breaks to spaces            |
 | inivalue       | like singleLine including addslashes()     |
 | html           | htmlspecialchars()                         |
+| fixedLength:<length>:<pad_char: | Pad / shrink the output to <length> characters |
 
 
 ### Replacing the default-Filter
