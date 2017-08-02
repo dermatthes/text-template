@@ -4,7 +4,7 @@
 2: Boolean is true
 {/if}
 3: Some Line of Code
-{if boolVal == FALSE}
+{if value1 == "Some value"}
 4: Some skippedText
 {/if}
 5: Some other text

@@ -19,6 +19,10 @@ Assert::equal(
 );
 
 
+$p = new TextTemplate("T: {= t1}");
+$p->setDefaultFilter("raw");
+Assert::equal("T: <>", $p->apply(["t1" => "<>"]));
+
 
 
 

@@ -32,6 +32,8 @@
 
 namespace Leuffen\TextTemplate;
 
+use Symfony\Component\Config\Definition\Exception\Exception;
+
 class TextTemplate {
 
     const VERSION = "2.0.0";
@@ -49,9 +51,9 @@ class TextTemplate {
         $this->mFilter["singleLine"] = function ($input) { return str_replace("\n", " ", $input); };
         $this->mFilter["inivalue"] = function ($input) { return addslashes(str_replace("\n", " ", $input)); };
 
-        $this->mFilter["fixedLength"] = function ($input, $length, $padChar=" ") {
+        $this->addFilter("fixedLength", function ($input, $length, $padChar=" ") {
             return str_pad(substr($input, 0, $length), $length, $padChar);
-        };
+        });
     }
 
     /**
@@ -296,8 +298,9 @@ class TextTemplate {
     private function _getItemValue ($compName, $context) {
         if (preg_match ('/^("|\')(.*?)\1$/i', $compName, $matches))
             return $matches[2]; // string Value
-        if (is_numeric($compName))
-            return ($compName);
+        if (is_numeric($compName)) {
+            return $compName;
+        }
         if (strtoupper($compName) == "FALSE")
             return FALSE;
         if (strtoupper($compName) == "TRUE")
@@ -348,15 +351,18 @@ class TextTemplate {
                 $doIf = ($comp1 != $comp2);
                 break;
             case "<":
+
                 $doIf = ($comp1 < $comp2);
                 break;
             case ">":
                 $doIf = ($comp1 > $comp2);
                 break;
+
         }
 
-        if ( ! $doIf)
+        if ( ! $doIf) {
             return "";
+        }
 
         $ifConditionDidMatch = true; // Skip further else / elseif execution
         $content = $this->_parseBlock($context, $content, $softFail);
