@@ -13,7 +13,7 @@
 
     <target name="unit-tests">
         <!-- Phing hat ein eigenes PHPUNit-Klasse: Aber: Process-isolation klappt nicht. D.h. der Build von Libraries schlägt fehl -->
-        <exec dir="." logoutput="true" checkreturn="true" command="./vendor/bin/tester -p /usr/bin/php -s ./test/"/>
+        <exec dir="." logoutput="true" checkreturn="true" command="./vendor/bin/tester -p /usr/bin/php -c test/php.ini --coverage ./build/logs/clover.xml --coverage-src ./src -s ./test/"/>
     </target>
 
 </project>

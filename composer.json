@@ -15,7 +15,9 @@
         "php": ">=5.4"
     },
     "require-dev": {
-        "nette/tester": "*"
+        "nette/tester": "*",
+        "satooshi/php-coveralls": "dev-master",
+        "phpunit/phpcov": "^2.0"
     },
     "autoload": {
         "psr-4": {
