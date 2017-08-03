@@ -311,6 +311,7 @@ class TextTemplate {
                 break;
             case "NULL":
                 return NULL;
+                break;
             default:
                 return $this->_getValueByName($context, $compName);
         }
@@ -343,6 +344,7 @@ class TextTemplate {
         }
 
         if ( ! preg_match('/(([\"\']?).*?(\2))\s*(==|===|<|<=|>|>=|!=|!==)\s*(([\"\']?).*(\6))/i', $cmdParam, $matches)) {
+            // {if var} => {if var == true}
             $comp1 = $this->_getItemValue($cmdParam, $context);
             $comp2 = true;
             $operator = '==';
