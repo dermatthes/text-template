@@ -301,13 +301,19 @@ class TextTemplate {
         if (is_numeric($compName)) {
             return $compName;
         }
-        if (strtoupper($compName) == "FALSE")
-            return FALSE;
-        if (strtoupper($compName) == "TRUE")
-            return TRUE;
-        if (strtoupper($compName) == "NULL")
-            return NULL;
-        return $this->_getValueByName($context, $compName);
+        switch (strtoupper($compName)
+        {
+            case "FALSE":
+                return FALSE;
+                break;
+            case "TRUE":
+                return TRUE;
+                break;
+            case "NULL":
+                return NULL;
+            default:
+                return $this->_getValueByName($context, $compName);
+        }
     }
 
 
@@ -336,25 +342,38 @@ class TextTemplate {
             $ifConditionDidMatch = false;
         }
 
-        if ( ! preg_match('/([\"\']?.*?[\"\']?)\s*(==|<|>|!=)\s*([\"\']?.*[\"\']?)/i', $cmdParam, $matches)) {
-            return "!! Invalid command sequence: '$cmdParam' !!";
+        if ( ! preg_match('/(([\"\']?).*?(\2))\s*(==|===|<|<=|>|>=|!=|!==)\s*(([\"\']?).*(\6))/i', $cmdParam, $matches)) {
+            $comp1 = $this->_getItemValue($cmdParam, $context);
+            $comp2 = true;
+            $operator = '==';
+        } else {
+            $comp1 = $this->_getItemValue(trim($matches[1]), $context);
+            $comp2 = $this->_getItemValue(trim($matches[5]), $context);
+            $operator = $matches[4];
         }
-
-        $comp1 = $this->_getItemValue(trim($matches[1]), $context);
-        $comp2 = $this->_getItemValue(trim($matches[3]), $context);
-
-        switch ($matches[2]) {
-            case "==":
+        switch ($operator) {
+            case '==':
                 $doIf = ($comp1 == $comp2);
                 break;
-            case "!=":
+            case '===':
+                $doIf = ($comp1 === $comp2);
+                break;
+            case '!=':
                 $doIf = ($comp1 != $comp2);
                 break;
-            case "<":
-
+            case '!=':
+                $doIf = ($comp1 !== $comp2);
+                break;
+            case '<':
                 $doIf = ($comp1 < $comp2);
                 break;
-            case ">":
+            case '<=':
+                $doIf = ($comp1 < $comp2);
+                break;
+            case '>':
+                $doIf = ($comp1 > $comp2);
+                break;
+            case '>=':
                 $doIf = ($comp1 > $comp2);
                 break;
 
