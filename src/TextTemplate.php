@@ -54,6 +54,29 @@ class TextTemplate {
         $this->addFilter("fixedLength", function ($input, $length, $padChar=" ") {
             return str_pad(substr($input, 0, $length), $length, $padChar);
         });
+
+        $this->mFilter["inflect"] = function ($input, $type="tag") {
+            switch ($type) {
+                case "tag":
+                    return preg_replace("/[^a-z0-9]/im", "_", trim(strtolower($input)));
+
+
+                default:
+                    return "##ERR:inflect:$type - unknown type: '$type'##";
+            }
+        };
+
+        $this->mFilter["sanitize"] = function ($input, $type) {
+            switch ($type) {
+                case "hostname":
+                    return preg_replace("/[^a-z0-9\.\-]/im", "", trim(strtolower($input)));
+
+
+                default:
+                    return "##ERR:sanitize:$type - unknown type: '$type'##";
+            }
+        };
+
     }
 
     /**

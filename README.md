@@ -182,6 +182,8 @@ Use this filter inside your template
 | inivalue       | like singleLine including addslashes()     |
 | html           | htmlspecialchars()                         |
 | fixedLength:<length>:<pad_char: | Pad / shrink the output to <length> characters |
+| inflect:tag | Convert to underline tag |
+| sanitize:hostname | Convert to hostname |
 
 
 ### Replacing the default-Filter
