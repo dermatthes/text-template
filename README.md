@@ -180,7 +180,11 @@ Processing Exceptions:
 
 Use `!>` to catch exceptions and redirect them to the scope.
 
-`{throw msg="SomeMsg" !> lastErr}` 
+`{throw msg="SomeMsg" !> lastErr}`
+
+Or use `!break` or `!continue` to break/continue a loop
+
+ 
 
 
 ### Adding Filters

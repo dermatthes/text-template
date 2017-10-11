@@ -19,3 +19,10 @@ TextTemplate::$__DEFAULT_FUNCTION["continue"] =
     function ($paramArr, $command, $context, $cmdParam) {
         throw new __ContinueLoopException("{continue} called outside loop");
     };
+
+TextTemplate::$__DEFAULT_FUNCTION["set"] =
+    function ($paramArr, $command, &$context, $cmdParam) {
+        foreach ($paramArr as $name => $val)
+            $context[$name] = $val;
+        return "";
+    };

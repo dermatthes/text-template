@@ -47,6 +47,9 @@ $out = $tt->loadTemplate($in)->apply([]);
 Assert::equal('Some Exception', $out);
 
 
-
+$in = "{set retVal='SomeValue'}{=retVal}";
+$out = $tt->loadTemplate($in)->apply([], true, $retContext);
+Assert::equal('SomeValue', $out);
+Assert::equal("SomeValue", $retContext["retVal"]);
 
 

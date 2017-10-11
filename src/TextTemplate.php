@@ -105,6 +105,23 @@ class TextTemplate {
         return $this;
     }
 
+    /**
+     * Register all public Functions from an Object
+     *
+     * @param \stdClass $obj
+     *
+     * @return $this
+     */
+    public function addFunctionClass (\stdClass $obj) {
+        $ref = new \ReflectionObject($obj);
+        foreach ($ref->getMethods() as $curMethod) {
+            if ( ! $curMethod->isPublic())
+                continue;
+            $this->addFunction($curMethod->getName(), [$obj, $curMethod->getName()]);
+        }
+        return $this;
+    }
+
 
     public function _replaceElseIf ($input) {
         $lines = explode("\n", $input);
@@ -504,7 +521,7 @@ class TextTemplate {
      * @throws TemplateParsingException
      * @return string
      */
-    public function apply ($params, $softFail=TRUE) {
+    public function apply ($params, $softFail=TRUE, &$context=[]) {
         $text = $this->mTemplateText;
 
         $context = $params;
