@@ -436,17 +436,32 @@ class TextTemplate {
                         $paramArr[$matches["name"]] = $this->_getItemValue($matches["sval"], $context);
                     }, $cmdParam);
 
-                    if (isset ($this->mFunctions[$command])) {
-                        $out = ($this->mFunctions[$command])($context, $command, $paramArr, $cmdParam);
+                    $context["lastErr"] = null;
+
+                    if ( ! isset ($this->mFunctions[$command])) {
+                        if ($softFail === true)
+                            return "!!ERR:Undefined function '$command'!!";
+                        throw new Exception("Undefined function '$command'");
                     }
 
+                    try {
+                        $func = $this->mFunctions[$command];
+                        $out = $func(
+                            $context,
+                            $command,
+                            $paramArr,
+                            $cmdParam
+                        );
+                        if (preg_match ("/\>\s*([a-z0-9\_]+)/i", $cmdParamRest, $matches)) {
+                            $context[$matches[1]] = $out;
+                        } else {
+                            return $out;
+                        }
+                    } catch (Exception $e) {
+                        $context["lastErr"] = $e->getMessage();
 
-
-                    if (preg_match ("/\>\s*([a-z0-9\_]+)/i", $cmdParamRest, $matches)) {
-                        $context[$matches[1]] = $out;
-                    } else {
-                        return $out;
                     }
+                    return "";
                 }
             }, $block);
         if ($result === NULL) {
