@@ -115,6 +115,8 @@ Line {= @index1 }: {= curName}
 {/for}
 ```
 
+Inside loops you can `{break}` or `{continue}` the loop.
+
 
 ## Conditions (if)
 
@@ -151,15 +153,34 @@ Goodbye World
 
 ### Calling Functions
 
+You can register user-defined functions.
+
 ```
-{fetch url="http://xyz" > out}
-{if lastErr != null}
-Could not poll: {= lastErr}
-{/if}
+$template->addFunction("sayHello", 
+    function ($paramArr, $command, $context, $cmdParam) {
+        return "Hello " . $paramArr["msg"];
+    }
+);
+```
+
+Call the function and output into template
+
+```
+{sayHello msg="Joe"}
+```
+
+or inject the Result into the context for further processing:
+
+```
+{sayHello msg="Joe" > out}
 {=out}
 ```
 
+Processing Exceptions:
 
+Use `!>` to catch exceptions and redirect them to the scope.
+
+`{throw msg="SomeMsg" !> lastErr}` 
 
 
 ### Adding Filters

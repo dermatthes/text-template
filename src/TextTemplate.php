@@ -163,9 +163,9 @@ class TextTemplate {
                     if ($tag == "else" || $tag == "elseif"){
 
                         if ( ! isset ($nestingIndex["if"]))
-                            throw new \Exception("Line {$li}: 'if' Opening tag not found for else/elseif tag: '{$matches[0]}'");
+                            throw new TemplateParsingException("Line {$li}: 'if' Opening tag not found for else/elseif tag: '{$matches[0]}'");
                         if (count ($nestingIndex["if"]) == 0)
-                            throw new \Exception("Line {$li}: Nesting level does not match for closing tag: '{$matches[0]}'");
+                            throw new TemplateParsingException("Line {$li}: Nesting level does not match for closing tag: '{$matches[0]}'");
                         $curIndex = $nestingIndex["if"][count ($nestingIndex["if"])-1];
                         $out =  "{" . $tag . $curIndex[0] . rtrim($rest) . "}";
                         return $out;
@@ -180,9 +180,9 @@ class TextTemplate {
                         return $out;
                     } else if ($slash == "/") {
                         if ( ! isset ($nestingIndex[$tag]))
-                            throw new \Exception("Line {$li}: Opening tag not found for closing tag: '{$matches[0]}'");
+                            throw new TemplateParsingException("Line {$li}: Opening tag not found for closing tag: '{$matches[0]}'");
                         if (count ($nestingIndex[$tag]) == 0)
-                            throw new \Exception("Line {$li}: Nesting level does not match for closing tag: '{$matches[0]}'");
+                            throw new TemplateParsingException("Line {$li}: Nesting level does not match for closing tag: '{$matches[0]}'");
                         $curIndex = array_pop($nestingIndex[$tag]);
                         return "{/" . $tag . $curIndex[0] . "}";
                     } else {
@@ -195,7 +195,7 @@ class TextTemplate {
         }
         foreach ($nestingIndex as $tag => $curNestingIndex) {
             if (count ($curNestingIndex) > 0)
-                throw new \Exception("Unclosed tag '{$tag}' opened in line {$curNestingIndex[0][1]} ");
+                throw new TemplateParsingException("Unclosed tag '{$tag}' opened in line {$curNestingIndex[0][1]} ");
         }
         return implode ("\n", $lines);
     }
@@ -223,7 +223,7 @@ class TextTemplate {
                     }
                 } else {
                     if ( ! $softFail) {
-                        throw new \Exception("ParsingError: Can't parse element: '{$name}' Error on subelement: '$cur'");
+                        throw new TemplateParsingException("ParsingError: Can't parse element: '{$name}' Error on subelement: '$cur'");
                     }
                     $value = NULL;
                 }
@@ -279,9 +279,11 @@ class TextTemplate {
 
 
 
-    private function _runFor ($context, $content, $cmdParam, $softFail=TRUE) {
+    private function _runFor (&$context, $content, $cmdParam, $softFail=TRUE) {
         if ( ! preg_match ('/([a-z0-9\.\_]+) in ([a-z0-9\.\_]+)/i', $cmdParam, $matches)) {
-
+            if ( ! $softFail)
+                throw new TemplateParsingException("Invalid for-syntax '$cmdParam'");
+            return "!!Invalid for-syntax '$cmdParam'!";
         }
         $iterateOverName = $matches[2];
         $localName = $matches[1];
@@ -330,7 +332,7 @@ class TextTemplate {
     }
 
 
-    private function _runIf ($context, $content, $cmdParam, $softFail=TRUE, &$ifConditionDidMatch) {
+    private function _runIf (&$context, $content, $cmdParam, $softFail=TRUE, &$ifConditionDidMatch) {
         //echo $cmdParam;
         $doIf = false;
 
@@ -390,11 +392,11 @@ class TextTemplate {
 
     private $ifConditionMatch = [];
 
-    private function _parseBlock ($context, $block, $softFail=TRUE) {
+    private function _parseBlock (&$context, $block, $softFail=TRUE) {
         // (?!\{): Lookahead Regex: Don't touch double {{
 
         $result = preg_replace_callback('/\n?(\{(?!=)((?<bcommand>if|for)(?<bnestingLevel>[0-9]+))(?<bcmdParam>.*?)\}(?<bcontent>.*?)\n?\{\/\2\}|\{(?!=)(?<command>[a-z]+)\s*(?<cmdParam>.*?)\}|\{\=(?<value>.+?)\})/ism',
-            function ($matches) use ($context, $softFail) {
+            function ($matches) use (&$context, $softFail) {
                 if (isset ($matches["value"]) && $matches["value"] != null) {
                     return $this->_parseValueOfTags($context, $matches["value"], $softFail);
                 } else if (isset ($matches["bcommand"]) && $matches["bcommand"] != null) {
@@ -424,7 +426,9 @@ class TextTemplate {
                             );
 
                         default:
-                            return "!! Invalid command: '$command' !!";
+                            if ( ! $softFail)
+                                throw new TemplateParsingException("Invalid block-command '$command' in block '{$matches[0]}'");
+                            return "!! Invalid block-command: '$command' !!";
                     }
                 } else {
                     // Regular Commands
@@ -432,7 +436,7 @@ class TextTemplate {
                     $cmdParam = $matches["cmdParam"];
 
                     $paramArr = [];
-                    $cmdParamRest = preg_replace_callback("/(?<name>[a-z0-9_]+)\s*=\s*(?<sval>((\"|')(.*?)\4)|[a-z0-9\.\_]+)/i", function ($matches) use(&$paramArr, &$context) {
+                    $cmdParamRest = preg_replace_callback('/(?<name>[a-z0-9_]+)\s*=\s*(?<sval>((\"|\')(.*?)\4)|[a-z0-9\.\_]+)/i', function ($matches) use(&$paramArr, &$context) {
                         $paramArr[$matches["name"]] = $this->_getItemValue($matches["sval"], $context);
                     }, $cmdParam);
 
@@ -441,25 +445,36 @@ class TextTemplate {
                     if ( ! isset ($this->mFunctions[$command])) {
                         if ($softFail === true)
                             return "!!ERR:Undefined function '$command'!!";
-                        throw new Exception("Undefined function '$command'");
+                        throw new TemplateParsingException("Undefined function '$command' in block '$matches[0]'");
                     }
+
+                    $retAs = null;
+                    $exAs = null;
+
+                    $cmdParamRest = preg_replace_callback("/\!\>\s*([a-z0-9\_]+)/i", function ($matches) use (&$exAs) {
+                        $exAs = $matches[1];
+                    }, $cmdParamRest);
+
+                    $cmdParamRest = preg_replace_callback("/\>\s*([a-z0-9\_]+)/i", function ($matches) use (&$retAs) {
+                        $retAs = $matches[1];
+                    }, $cmdParamRest);
 
                     try {
                         $func = $this->mFunctions[$command];
                         $out = $func(
-                            $context,
-                            $command,
-                            $paramArr,
-                            $cmdParam
+                            $paramArr, $command, $context, $cmdParam
                         );
-                        if (preg_match ("/\>\s*([a-z0-9\_]+)/i", $cmdParamRest, $matches)) {
-                            $context[$matches[1]] = $out;
+                        if ($retAs !== null) {
+                            $context[$retAs] = $out;
                         } else {
                             return $out;
                         }
                     } catch (Exception $e) {
-                        $context["lastErr"] = $e->getMessage();
-
+                        if ($exAs !== null) {
+                            $context[$exAs] = $e->getMessage();
+                        } else {
+                            throw $e;
+                        }
                     }
                     return "";
                 }
@@ -472,6 +487,7 @@ class TextTemplate {
 
 
     /**
+     *
      * @param $template
      * @return $this
      */
@@ -485,6 +501,7 @@ class TextTemplate {
      * Parse Tokens in Text (Search for $(name.subname.subname)) of
      *
      *
+     * @throws TemplateParsingException
      * @return string
      */
     public function apply ($params, $softFail=TRUE) {
