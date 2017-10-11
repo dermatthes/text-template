@@ -184,7 +184,16 @@ Use `!>` to catch exceptions and redirect them to the scope.
 
 Or use `!break` or `!continue` to break/continue a loop
 
- 
+### Comments
+
+Use `{# #}` to add comments (will be stripped from output
+
+```
+Template {# Some Comment #}
+{# Some
+Multiline
+Comment #}
+``` 
 
 
 ### Adding Filters

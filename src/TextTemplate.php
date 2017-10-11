@@ -218,6 +218,10 @@ class TextTemplate {
     }
 
 
+    private function _removeComments ($input) {
+        return preg_replace('/\{\#.*?\#\}/ism', "", $input);
+    }
+
 
     private function _getValueByName ($context, $name, $softFail=TRUE) {
         $dd = explode (".", $name);
@@ -526,6 +530,7 @@ class TextTemplate {
 
         $context = $params;
 
+        $text = $this->_removeComments($text);
         $text = $this->_replaceNestingLevels($text);
         $text = $this->_replaceElseIf($text);
 
