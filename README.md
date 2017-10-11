@@ -149,6 +149,19 @@ Goodbye World
 {/if}
 ```
 
+### Calling Functions
+
+```
+{fetch url="http://xyz" > out}
+{if lastErr != null}
+Could not poll: {= lastErr}
+{/if}
+{=out}
+```
+
+
+
+
 ### Adding Filters
 
 You can add custom filters or overwrite own filters.

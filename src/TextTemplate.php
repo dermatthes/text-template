@@ -34,49 +34,29 @@ namespace Leuffen\TextTemplate;
 
 use Symfony\Component\Config\Definition\Exception\Exception;
 
+// Require only when Class is first loaded by classloader
+require_once __DIR__."/buildInFilters.inc.php";
+require_once __DIR__."/buildInFunctions.inc.php";
+
+
 class TextTemplate {
 
     const VERSION = "2.0.0";
 
+
+    public static $__DEFAULT_FILTER = [];
+    public static $__DEFAULT_FUNCTION = [];
+
+
     private $mTemplateText;
     private $mFilter = [];
+    private $mFunctions = [];
 
     public function __construct ($text="") {
+
         $this->mTemplateText = $text;
-        $this->mFilter["_DEFAULT_"] = function ($input) { return htmlspecialchars($input); };
-
-        // Raw is only a pseudo-filter. If it is not in the chain of filters, __DEFAULT__ will be appended to the filter
-        $this->mFilter["html"] = function ($input) { return htmlspecialchars($input); };
-        $this->mFilter["raw"] = function ($input) { return $input; };
-        $this->mFilter["singleLine"] = function ($input) { return str_replace("\n", " ", $input); };
-        $this->mFilter["inivalue"] = function ($input) { return addslashes(str_replace("\n", " ", $input)); };
-
-        $this->addFilter("fixedLength", function ($input, $length, $padChar=" ") {
-            return str_pad(substr($input, 0, $length), $length, $padChar);
-        });
-
-        $this->mFilter["inflect"] = function ($input, $type="tag") {
-            switch ($type) {
-                case "tag":
-                    return preg_replace("/[^a-z0-9]/im", "_", trim(strtolower($input)));
-
-
-                default:
-                    return "##ERR:inflect:$type - unknown type: '$type'##";
-            }
-        };
-
-        $this->mFilter["sanitize"] = function ($input, $type) {
-            switch ($type) {
-                case "hostname":
-                    return preg_replace("/[^a-z0-9\.\-]/im", "", trim(strtolower($input)));
-
-
-                default:
-                    return "##ERR:sanitize:$type - unknown type: '$type'##";
-            }
-        };
-
+        $this->mFilter = self::$__DEFAULT_FILTER;
+        $this->mFunctions = self::$__DEFAULT_FUNCTION;
     }
 
     /**
@@ -107,6 +87,21 @@ class TextTemplate {
      */
     public function addFilter ($filterName, callable $filterFn) {
         $this->mFilter[$filterName] = $filterFn;
+        return $this;
+    }
+
+
+    /**
+     * Register a Function you can call
+     *
+     *
+     * @param          $functionName
+     * @param callable $callback
+     *
+     * @return $this
+     */
+    public function addFunction ($functionName, callable $callback) {
+        $this->mFunctions[$functionName] = $callback;
         return $this;
     }
 
@@ -161,6 +156,7 @@ class TextTemplate {
         for ($li=0; $li < count ($lines); $li++) {
             $lines[$li] = preg_replace_callback('/\{(?!=)\s*(\/?)\s*([a-z]+)(.*?)\}/im',
                 function ($matches) use (&$nestingIndex, &$indexCounter, &$li) {
+                    $blockTags = ["if", "for"];
                     $slash = $matches[1];
                     $tag = $matches[2];
                     $rest = $matches[3];
@@ -174,7 +170,7 @@ class TextTemplate {
                         $out =  "{" . $tag . $curIndex[0] . rtrim($rest) . "}";
                         return $out;
                     }
-                    if ($slash == "") {
+                    if ($slash == "" && in_array($tag, $blockTags)) {
                         if ( ! isset ($nestingIndex[$tag]))
                             $nestingIndex[$tag] = [];
                         $nestingIndex[$tag][] = [$indexCounter, $li];
@@ -190,7 +186,7 @@ class TextTemplate {
                         $curIndex = array_pop($nestingIndex[$tag]);
                         return "{/" . $tag . $curIndex[0] . "}";
                     } else {
-                        throw new \Exception("Line {$li}: This exception should not appear!");
+                        return $matches[0]; // ignore - is Function
                     }
                 },
                 $lines[$li]
@@ -258,33 +254,27 @@ class TextTemplate {
     }
 
 
-    private function _parseValueOfTags ($context, $block, $softFail=TRUE) {
-        $result = preg_replace_callback ("/\\{=(.+?)\\}/im",
-            function ($_matches) use ($softFail, $context) {
-                $match = $_matches[1];
+    private function _parseValueOfTags ($context, $match, $softFail=TRUE) {
+        $chain = explode("|", $match);
+        for ($i=0; $i<count ($chain); $i++)
+            $chain[$i] = trim ($chain[$i]);
 
-                $chain = explode("|", $match);
-                for ($i=0; $i<count ($chain); $i++)
-                    $chain[$i] = trim ($chain[$i]);
+        if ( ! in_array("raw", $chain))
+            $chain[] = "_DEFAULT_";
 
-                if ( ! in_array("raw", $chain))
-                    $chain[] = "_DEFAULT_";
+        $varName = trim (array_shift($chain));
 
-                $varName = trim (array_shift($chain));
+        if ($varName === "__CONTEXT__") {
+            $value = "\n----- __CONTEXT__ -----\n" . var_export($context, true) . "\n----- / __CONTEXT__ -----\n";
+        } else {
+            $value = $this->_getValueByName($context, $varName, $softFail);
+        }
 
-                if ($varName === "__CONTEXT__") {
-                    $value = "\n----- __CONTEXT__ -----\n" . var_export($context, true) . "\n----- / __CONTEXT__ -----\n";
-                } else {
-                    $value = $this->_getValueByName($context, $varName, $softFail);
-                }
+        foreach ($chain as $curName) {
+            $value = $this->_applyFilter($curName, $value);
+        }
 
-                foreach ($chain as $curName) {
-                    $value = $this->_applyFilter($curName, $value);
-                }
-
-                return $value;
-            }, $block);
-        return $result;
+        return $value;
     }
 
 
@@ -308,8 +298,14 @@ class TextTemplate {
             $context["@key"] = $key;
             $context["@index0"] = $index;
             $context["@index1"] = $index+1;
-            $curContent = $this->_parseBlock($context, $content, $softFail);
-            $curContent = $this->_parseValueOfTags($context, $curContent, $softFail);
+            try {
+                $curContent = $this->_parseBlock($context, $content, $softFail);
+            } catch (__BreakLoopException $e) {
+                break;
+            } catch (__ContinueLoopException $e) {
+                continue;
+            }
+
 
             $result .= $curContent;
             $index++;
@@ -374,7 +370,6 @@ class TextTemplate {
                 $doIf = ($comp1 != $comp2);
                 break;
             case "<":
-
                 $doIf = ($comp1 < $comp2);
                 break;
             case ">":
@@ -389,7 +384,6 @@ class TextTemplate {
 
         $ifConditionDidMatch = true; // Skip further else / elseif execution
         $content = $this->_parseBlock($context, $content, $softFail);
-        $content = $this->_parseValueOfTags($context, $content, $softFail);
         return $content;
 
     }
@@ -399,22 +393,60 @@ class TextTemplate {
     private function _parseBlock ($context, $block, $softFail=TRUE) {
         // (?!\{): Lookahead Regex: Don't touch double {{
 
-        $result = preg_replace_callback('/\n?\{(?!=)((?<command>[a-z]+)(?<nestingLevel>[0-9]+))(?<cmdParam>.*?)\}(?<content>.*?)\n?\{\/\1\}/ism',
+        $result = preg_replace_callback('/\n?(\{(?!=)((?<bcommand>if|for)(?<bnestingLevel>[0-9]+))(?<bcmdParam>.*?)\}(?<bcontent>.*?)\n?\{\/\2\}|\{(?!=)(?<command>[a-z]+)\s*(?<cmdParam>.*?)\}|\{\=(?<value>.+?)\})/ism',
             function ($matches) use ($context, $softFail) {
-                $command = $matches["command"];
-                $cmdParam = $matches["cmdParam"];
-                $content = $matches["content"];
-                $nestingLevel = $matches["nestingLevel"];
+                if (isset ($matches["value"]) && $matches["value"] != null) {
+                    return $this->_parseValueOfTags($context, $matches["value"], $softFail);
+                } else if (isset ($matches["bcommand"]) && $matches["bcommand"] != null) {
 
-                switch ($command) {
-                    case "for":
-                        return $this->_runFor($context, $content, $cmdParam, $softFail);
+                    // Block-Commands
+                    $command = $matches["bcommand"];
+                    $cmdParam = $matches["bcmdParam"];
+                    $content = $matches["bcontent"];
+                    $nestingLevel = $matches["bnestingLevel"];
 
-                    case "if":
-                        return $this->_runIf ($context, $content, $cmdParam, $softFail, $this->ifConditionMatch[$nestingLevel]);
+                    switch ($command) {
+                        case "for":
+                            return $this->_runFor(
+                                $context,
+                                $content,
+                                $cmdParam,
+                                $softFail
+                            );
 
-                    default:
-                        return "!! Invalid command: '$command' !!";
+                        case "if":
+                            return $this->_runIf(
+                                $context,
+                                $content,
+                                $cmdParam,
+                                $softFail,
+                                $this->ifConditionMatch[$nestingLevel]
+                            );
+
+                        default:
+                            return "!! Invalid command: '$command' !!";
+                    }
+                } else {
+                    // Regular Commands
+                    $command = $matches["command"];
+                    $cmdParam = $matches["cmdParam"];
+
+                    $paramArr = [];
+                    $cmdParamRest = preg_replace_callback("/(?<name>[a-z0-9_]+)\s*=\s*(?<sval>((\"|')(.*?)\4)|[a-z0-9\.\_]+)/i", function ($matches) use(&$paramArr, &$context) {
+                        $paramArr[$matches["name"]] = $this->_getItemValue($matches["sval"], $context);
+                    }, $cmdParam);
+
+                    if (isset ($this->mFunctions[$command])) {
+                        $out = ($this->mFunctions[$command])($context, $command, $paramArr, $cmdParam);
+                    }
+
+
+
+                    if (preg_match ("/\>\s*([a-z0-9\_]+)/i", $cmdParamRest, $matches)) {
+                        $context[$matches[1]] = $out;
+                    } else {
+                        return $out;
+                    }
                 }
             }, $block);
         if ($result === NULL) {
@@ -448,8 +480,8 @@ class TextTemplate {
         $text = $this->_replaceNestingLevels($text);
         $text = $this->_replaceElseIf($text);
 
-        $text = $this->_parseBlock($context, $text, $softFail);
-        $result = $this->_parseValueOfTags($context, $text, $softFail);
+        $result = $this->_parseBlock($context, $text, $softFail);
+
 
         return $result;
     }

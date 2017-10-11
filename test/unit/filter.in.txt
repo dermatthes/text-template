@@ -8,4 +8,3 @@
 #7a inflect     : {= str | inflect }
 #7b inflect     : {= str | inflect:tag }
 #7c sanitize    : {= str | sanitize:hostname }
-
