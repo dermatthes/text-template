@@ -112,7 +112,7 @@ class TextTemplate {
      *
      * @return $this
      */
-    public function addFunctionClass (\stdClass $obj) {
+    public function addFunctionClass ($obj) {
         $ref = new \ReflectionObject($obj);
         foreach ($ref->getMethods() as $curMethod) {
             if ( ! $curMethod->isPublic())
