@@ -223,11 +223,21 @@ class TextTemplate {
     }
 
 
+    private function _removeWhitespace ($input) {
+        //echo $input;
+        $input = preg_replace("/\}\s*\{(?!=)/im", "}{", $input);
+        //echo $input;
+        return $input;
+    }
+
+
     private function _getValueByName ($context, $name, $softFail=TRUE) {
         $dd = explode (".", $name);
         $value = $context;
         $cur = "";
         foreach ($dd as $cur) {
+            if (is_numeric($cur))
+                $cur = (int)$cur;
             if (is_array($value)) {
                 if ( ! isset ( $value[$cur] )) {
                     $value = NULL;
@@ -416,7 +426,7 @@ class TextTemplate {
     private function _parseBlock (&$context, $block, $softFail=TRUE) {
         // (?!\{): Lookahead Regex: Don't touch double {{
 
-        $result = preg_replace_callback('/\n?(\{(?!=)((?<bcommand>if|for)(?<bnestingLevel>[0-9]+))(?<bcmdParam>.*?)\}(?<bcontent>.*?)\n?\{\/\2\}|\{(?!=)(?<command>[a-z]+)\s*(?<cmdParam>.*?)\}|\{\=(?<value>.+?)\})/ism',
+        $result = preg_replace_callback('/(\{(?!=)((?<bcommand>if|for)(?<bnestingLevel>[0-9]+))(?<bcmdParam>.*?)\}(?<bcontent>.*?)\n?\{\/\2\}|\{(?!=)(?<command>[a-z]+)\s*(?<cmdParam>.*?)\}|\{\=(?<value>.+?)\})/ism',
             function ($matches) use (&$context, $softFail) {
                 if (isset ($matches["value"]) && $matches["value"] != null) {
                     return $this->_parseValueOfTags($context, $matches["value"], $softFail);
@@ -530,9 +540,11 @@ class TextTemplate {
 
         $context = $params;
 
+
         $text = $this->_removeComments($text);
         $text = $this->_replaceNestingLevels($text);
         $text = $this->_replaceElseIf($text);
+        $text = $this->_removeWhitespace($text);
 
         $result = $this->_parseBlock($context, $text, $softFail);
 
