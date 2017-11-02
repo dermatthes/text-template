@@ -224,9 +224,14 @@ class TextTemplate {
 
 
     private function _removeWhitespace ($input) {
-        //echo $input;
-        $input = preg_replace("/\}\s*\{(?!=)/im", "}{", $input);
-        //echo $input;
+        // Replace: All lines
+        // - Starting with Newline and optional spaces
+        // - With only {xyz}
+        // - Not Starting with {=
+        // And ending with newline by single line
+        //
+        // Caution: Lookahead at the end required to strip multiple lines!
+        $input = preg_replace("/\\n\s*(\{(?!\=)[^\}]+?\})(?=[\\n\{])/m", '$1', $input);
         return $input;
     }
 
