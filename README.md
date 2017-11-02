@@ -66,19 +66,6 @@ I prefer and recommend using [composer](http://getcomposer.com):
 composer require text/template
 ```
 
-But you can do it the traditional way too:
-
-* __Copy n Paste:__ Just Copy the contents of <https://github.com/dermatthes/text-template/blob/master/src/TextTemplate.php> to your project folder to
-use TextTemplate. It's just one class.
-
-* __Git externals:__ Clone this repository and add this as external to your project.
-
-* ~~__Download gzip'ed phar:__-- If you like downloads we offer you a gzip'ed phar archive: <https://github.com/dermatthes/text-template/blob/master/_build/text-template.recent.phar.php.gz>~~ (Abandoned: July/2017 - please use composer or copy the source code)
-
-* ~~__Download source tar:__ <https://raw.githubusercontent.com/dermatthes/text-template/master/_build/text-template.recent.src.tar.gz>~~ (Abandoned: July/2017 - please use composer or copy the source code)
-
-_TextTemplate uses Phing to build the phar-archives and gzip them. Just execute main-target in build.xml to build your own version_
-
 
 ## Value injection
 
