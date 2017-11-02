@@ -5,3 +5,6 @@
 #5 html         : abc123'&amp;quot;
 #6a fixedLength : ab
 #6b fixedLength : abc123'&quot;++++++++++++++++++++++
+#7a inflect     : abc123__
+#7b inflect     : abc123__
+#7c sanitize    : abc123

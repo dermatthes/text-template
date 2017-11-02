@@ -115,6 +115,8 @@ Line {= @index1 }: {= curName}
 {/for}
 ```
 
+Inside loops you can `{break}` or `{continue}` the loop.
+
 
 ## Conditions (if)
 
@@ -149,6 +151,51 @@ Goodbye World
 {/if}
 ```
 
+### Calling Functions
+
+You can register user-defined functions.
+
+```
+$template->addFunction("sayHello", 
+    function ($paramArr, $command, $context, $cmdParam) {
+        return "Hello " . $paramArr["msg"];
+    }
+);
+```
+
+Call the function and output into template
+
+```
+{sayHello msg="Joe"}
+```
+
+or inject the Result into the context for further processing:
+
+```
+{sayHello msg="Joe" > out}
+{=out}
+```
+
+Processing Exceptions:
+
+Use `!>` to catch exceptions and redirect them to the scope.
+
+`{throw msg="SomeMsg" !> lastErr}`
+
+Or use `!break` or `!continue` to break/continue a loop
+
+### Comments
+
+Use `{# #}` to add comments (will be stripped from output
+
+```
+Template {# Some Comment #}
+{# Some
+Multiline
+Comment #}
+``` 
+
+
 ### Adding Filters
 
 You can add custom filters or overwrite own filters.
@@ -182,6 +229,8 @@ Use this filter inside your template
 | inivalue       | like singleLine including addslashes()     |
 | html           | htmlspecialchars()                         |
 | fixedLength:<length>:<pad_char: | Pad / shrink the output to <length> characters |
+| inflect:tag | Convert to underline tag |
+| sanitize:hostname | Convert to hostname |
 
 
 ### Replacing the default-Filter
