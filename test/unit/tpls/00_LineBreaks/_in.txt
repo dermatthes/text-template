@@ -20,3 +20,10 @@
 1:Line
 2: True Value {if boolVal == false} Some Value{/if}
 3: Line
+
+
+1:Line
+{
+2 NextLine
+}
+3 Third

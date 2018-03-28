@@ -282,6 +282,17 @@ a github issue.
 
 __Keeping the tests green__: Please see / provide unit-tests. This project uses `nette/tester` for unit-testing.
 
+This Project uses [kickstart](https://github.com/c7lab/kickstart)'s ready to use development
+containers based on docker. Just run `./kickstart.sh` to run this project.
+
+To start the development container
+
+```bash
+./kickstart.sh
+```
+
+To execute the tests run `kick test` inside the container. (See `.kick.yml`)
+
 
 ## About
 Text-Template was written by Matthias Leuffen <http://leuffen.de>
