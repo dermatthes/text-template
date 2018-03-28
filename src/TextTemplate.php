@@ -105,6 +105,11 @@ class TextTemplate {
         return $this;
     }
 
+    public function addPlugin (TextTemplatePlugin $plugin)
+    {
+        $plugin->registerPlugin($this);
+    }
+
     /**
      * Register all public Functions from an Object
      *
