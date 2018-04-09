@@ -16,7 +16,7 @@
     },
     "require-dev": {
         "nette/tester": "*",
-        "satooshi/php-coveralls": "dev-master",
+        "satooshi/php-coveralls": "*",
         "phpunit/phpcov": "^2.0"
     },
     "autoload": {
