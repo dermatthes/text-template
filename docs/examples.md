@@ -52,5 +52,8 @@ title: text/template - examples
 The PHP-Code:
 
 ```php
-
+<?php
+$textTemplate = new TextTemplate();
+$textTemplate->loadTemplate(file_get_contents("template.tpl.html"));
+echo $textTemplate->apply([ ..data.. ]);
 ```
