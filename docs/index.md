@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Some test
+title: text/template php5/7 template rendering library
 ---
 
 Test
