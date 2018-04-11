@@ -57,3 +57,5 @@ $textTemplate = new TextTemplate();
 $textTemplate->loadTemplate(file_get_contents("template.tpl.html"));
 echo $textTemplate->apply([ ..data.. ]);
 ```
+
+More examples coming soon. Do you have good examples? [Contact me.](https://github.com/dermatthes/text-template/issues)
