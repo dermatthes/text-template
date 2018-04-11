@@ -6,7 +6,7 @@
 [![Latest Stable Version](https://poser.pugx.org/text/template/v/stable)](https://github.com/dermatthes/text-template/releases)
 [![Supports PHP 5.4+](https://raw.githubusercontent.com/xp-framework/web/master/static/php-5_4plus.png)](http://php.net/)
 [![Supports PHP 7.0+](https://raw.githubusercontent.com/xp-framework/web/master/static/php-7_0plus.png)](http://php.net/)
-
+[![Homepage](https://img.shields.io/badge/info-website-blue.svg)](http://text-template.pub.leuffen.de)
 ```
 {if user.searching=='template'}This is for you {= user.name }{else}Welcome {= user.name }{/if}
 ```
