@@ -1,6 +1,6 @@
 ---
 layout: default
-title: text/template - examples
+title: examples
 ---
 
 # Text-Template Examples
