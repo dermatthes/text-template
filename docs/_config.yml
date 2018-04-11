@@ -1,5 +1,5 @@
-title: Text-template
-description: Single-Class string template engine for PHP5 supporting if/loops/filters
+title: text/template
+description: Simple string template engine supporting if/loops/filters for PHP5+
 google_analytics:
 show_downloads: true
 theme: jekyll-theme-cayman
