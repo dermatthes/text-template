@@ -1,0 +1,8 @@
+title: Text-template
+description: Single-Class string template engine for PHP5 supporting if/loops/filters
+google_analytics:
+show_downloads: true
+theme: jekyll-theme-tactile
+
+gems:
+- jekyll-mentions
