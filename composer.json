@@ -3,7 +3,7 @@
     "type": "library",
     "description": "Simple and secure string-template-engine (Twig-like syntax) with nested if/elseif/else, loops, filters. Simple OOP api: Just one class doing the job (2-lines of code). Fast and secure: No code-generation, no eval'ed() code. Extensible by callbacks. Fully tested. Rich examples included.",
     "keywords": ["text", "template", "render", "mail", "if", "for", "loop", "filter", "smarty", "twig"],
-    "homepage": "http://github.com/dermatthes/text-template",
+    "homepage": "http://text-template.pub.leuffen.de",
     "license": "MIT",
     "authors": [
         {
