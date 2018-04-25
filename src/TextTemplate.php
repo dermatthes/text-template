@@ -241,7 +241,7 @@ class TextTemplate {
     }
 
 
-    private function _getValueByName ($context, $name, $softFail=TRUE) {
+    private function _getValueByName ($context, $name, $softFail) {
         $dd = explode (".", $name);
         $value = $context;
         $cur = "";
@@ -302,7 +302,7 @@ class TextTemplate {
     }
 
 
-    private function _parseValueOfTags ($context, $match, $softFail=TRUE) {
+    private function _parseValueOfTags ($context, $match, $softFail) {
         $chain = explode("|", $match);
         for ($i=0; $i<count ($chain); $i++)
             $chain[$i] = trim ($chain[$i]);
@@ -327,7 +327,7 @@ class TextTemplate {
 
 
 
-    private function _runFor (&$context, $content, $cmdParam, $softFail=TRUE) {
+    private function _runFor (&$context, $content, $cmdParam, $softFail) {
         if ( ! preg_match ('/([a-z0-9\.\_]+) in ([a-z0-9\.\_]+)/i', $cmdParam, $matches)) {
             if ( ! $softFail)
                 throw new TemplateParsingException("Invalid for-syntax '$cmdParam'");
@@ -364,7 +364,7 @@ class TextTemplate {
     }
 
 
-    private function _getItemValue ($compName, $context) {
+    private function _getItemValue ($compName, $context, $softFail) {
         if (preg_match ('/^("|\')(.*?)\1$/i', $compName, $matches))
             return $matches[2]; // string Value
         if (is_numeric($compName)) {
@@ -376,11 +376,11 @@ class TextTemplate {
             return TRUE;
         if (strtoupper($compName) == "NULL")
             return NULL;
-        return $this->_getValueByName($context, $compName);
+        return $this->_getValueByName($context, $compName, $softFail);
     }
 
 
-    private function _runIf (&$context, $content, $cmdParam, $softFail=TRUE, &$ifConditionDidMatch) {
+    private function _runIf (&$context, $content, $cmdParam, $softFail, &$ifConditionDidMatch) {
         //echo $cmdParam;
         $doIf = false;
 
@@ -409,8 +409,8 @@ class TextTemplate {
             return "!! Invalid command sequence: '$cmdParam' !!";
         }
 
-        $comp1 = $this->_getItemValue(trim($matches[1]), $context);
-        $comp2 = $this->_getItemValue(trim($matches[3]), $context);
+        $comp1 = $this->_getItemValue(trim($matches[1]), $context, $softFail);
+        $comp2 = $this->_getItemValue(trim($matches[3]), $context, $softFail);
 
         switch ($matches[2]) {
             case "==":
@@ -440,7 +440,7 @@ class TextTemplate {
 
     private $ifConditionMatch = [];
 
-    private function _parseBlock (&$context, $block, $softFail=TRUE) {
+    private function _parseBlock (&$context, $block, $softFail) {
         // (?!\{): Lookahead Regex: Don't touch double {{
 
         $result = preg_replace_callback('/(\{(?!=)((?<bcommand>if|for)(?<bnestingLevel>[0-9]+))(?<bcmdParam>.*?)\}(?<bcontent>.*?)\n?\{\/\2\}|\{(?!=)(?<command>[a-z]+)\s*(?<cmdParam>.*?)\}|\{\=(?<value>.+?)\})/ism',
@@ -484,8 +484,8 @@ class TextTemplate {
                     $cmdParam = $matches["cmdParam"];
 
                     $paramArr = [];
-                    $cmdParamRest = preg_replace_callback('/(?<name>[a-z0-9_]+)\s*=\s*(?<sval>((\"|\')(.*?)\4)|[a-z0-9\.\_]+)/i', function ($matches) use(&$paramArr, &$context) {
-                        $paramArr[$matches["name"]] = $this->_getItemValue($matches["sval"], $context);
+                    $cmdParamRest = preg_replace_callback('/(?<name>[a-z0-9_]+)\s*=\s*(?<sval>((\"|\')(.*?)\4)|[a-z0-9\.\_]+)/i', function ($matches) use(&$paramArr, &$context, $softFail) {
+                        $paramArr[$matches["name"]] = $this->_getItemValue($matches["sval"], $context, $softFail);
                     }, $cmdParam);
 
                     $context["lastErr"] = null;
