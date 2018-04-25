@@ -263,6 +263,7 @@ class TextTemplate {
                     if ( ! isset ( $value->$cur )) {
                         if ( ! $softFail) {
                             throw new TemplateParsingException("ParsingError: Can't parse element: '{$name}' Error on subelement: '$cur'");
+
                         }
                         $value = NULL;
                     } else {
