@@ -250,6 +250,9 @@ class TextTemplate {
                 $cur = (int)$cur;
             if (is_array($value)) {
                 if ( ! isset ( $value[$cur] )) {
+                    if ( ! $softFail) {
+                        throw new TemplateParsingException("ParsingError: Can't parse element: '{$name}' Error on subelement: '$cur'");
+                    }
                     $value = NULL;
                 } else {
                     $value = $value[$cur];
