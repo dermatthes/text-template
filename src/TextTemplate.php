@@ -236,7 +236,8 @@ class TextTemplate {
         // And ending with newline by single line
         //
         // Caution: Lookahead at the end required to strip multiple lines!
-        $input = preg_replace("/\\n\s*(\{(?!\=)[^\\n}]+?\})(?=[\\n\{])/m", '$1', $input);
+        $input = preg_replace("#\\n\h*(\{(?!=)[^\\n}]+?\})\h*\\n#m", "\$1\n", $input);
+        $input = preg_replace("#\}\\h*\\n\h*(\{(?!=))#m", "}\$1", $input);
         return $input;
     }
 
