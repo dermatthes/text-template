@@ -16,8 +16,8 @@ class UndefinedVariableException extends TemplateParsingException
 
     protected $triggerVarName;
     public function __construct(
-        string $message = "",
-        string $triggerVarName,
+        $message = "",
+        $triggerVarName,
         Throwable $previous = null
     ) {
         $this->triggerVarName = $triggerVarName;
