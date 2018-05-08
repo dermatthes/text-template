@@ -3,3 +3,8 @@
 2: Boolean is true
 3: Some Line of Code
 5: Some other text
+6: Boolean is true
+6: falseVal is false
+7: Yet another text
+8: Some not empty string
+9: Last text

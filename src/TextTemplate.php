@@ -406,14 +406,22 @@ class TextTemplate {
             $ifConditionDidMatch = false;
         }
 
-        if ( ! preg_match('/([\"\']?.*?[\"\']?)\s*(==|<|>|!=)\s*([\"\']?.*[\"\']?)/i', $cmdParam, $matches)) {
+        if ( ! preg_match('/(([\"\']?.*?[\"\']?)\s*(==|<|>|!=)\s*([\"\']?.*[\"\']?)|((!?)\s*(.*)))/i', $cmdParam, $matches)) {
             return "!! Invalid command sequence: '$cmdParam' !!";
         }
+        if(count($matches) == 8) {
+          $comp1 = $this->_getItemValue(trim($matches[7]), $context, $softFail);
+          $operator = '==';
+          $comp2 = $matches[6] ? FALSE : TRUE; // ! prefix
+        } elseif(count($matches) == 5){
+          $comp1 = $this->_getItemValue(trim($matches[2]), $context, $softFail);
+          $operator = trim($matches[3]);
+          $comp2 = $this->_getItemValue(trim($matches[4]), $context, $softFail);
+        } else {
+          return "!! Invalid command sequence: '$cmdParam' !!";
+        }
 
-        $comp1 = $this->_getItemValue(trim($matches[1]), $context, $softFail);
-        $comp2 = $this->_getItemValue(trim($matches[3]), $context, $softFail);
-
-        switch ($matches[2]) {
+        switch ($operator) {
             case "==":
                 $doIf = ($comp1 == $comp2);
                 break;
