@@ -252,7 +252,7 @@ class TextTemplate {
             if (is_array($value)) {
                 if ( ! isset ( $value[$cur] )) {
                     if ( ! $softFail) {
-                        throw new TemplateParsingException("ParsingError: Can't parse element: '{$name}' Error on subelement: '$cur'");
+                        throw new UndefinedVariableException("ParsingError: Can't parse element: '{$name}' Error on subelement: '$cur'", $name);
                     }
                     $value = NULL;
                 } else {
@@ -263,7 +263,7 @@ class TextTemplate {
                 if (is_object($value)) {
                     if ( ! isset ( $value->$cur )) {
                         if ( ! $softFail) {
-                            throw new TemplateParsingException("ParsingError: Can't parse element: '{$name}' Error on subelement: '$cur'");
+                            throw new UndefinedVariableException("ParsingError: Can't parse element: '{$name}' Error on subelement: '$cur'", $name);
 
                         }
                         $value = NULL;
@@ -272,7 +272,7 @@ class TextTemplate {
                     }
                 } else {
                     if ( ! $softFail) {
-                        throw new TemplateParsingException("ParsingError: Can't parse element: '{$name}' Error on subelement: '$cur'");
+                        throw new UndefinedVariableException("ParsingError: Can't parse element: '{$name}' Error on subelement: '$cur'", $name);
                     }
                     $value = NULL;
                 }
