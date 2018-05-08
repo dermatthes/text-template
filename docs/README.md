@@ -280,8 +280,8 @@ To improve debugging, you can switch this behaviour by setting `$softFail` to
 ```php
 try {
     $tt = new TextTemplate("{=someUndefinedName}");
-    $parser->apply([], false);
-    //                    ^^^^^
+    echo $tt->apply([], false);
+    //                  ^^^^^
 } catch (UndefinedVariableExceptions $e) {
     echo "UndefinedVariable: {$e->getTriggerVarName()}"
 }
