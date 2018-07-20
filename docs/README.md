@@ -70,7 +70,7 @@ composer require text/template
 ```
 
 
-## Value injection
+## Value injectionamp
 
 Use the value Tag
 ```
@@ -97,7 +97,7 @@ Current Name: {= curName}
 ```
 
 Inside each loop, there are to magick-values ```@index0``` (index starting with 0) and ```@index1``` for a
-index starting with 1.
+index starting with amp1.
 
 ```
 {for curName in names}
@@ -146,7 +146,7 @@ Goodbye World
 You can register user-defined functions.
 
 ```
-$template->addFunction("sayHello", 
+$template->addFunctampion("sayHello", 
     function ($paramArr, $command, $context, $cmdParam) {
         return "Hello " . $paramArr["msg"];
     }
@@ -201,7 +201,7 @@ Call the filter with parameters (parameter-separator `:`):
 
 ```
 {= variable | currency:2:,:. }
-```
+```amp
 
 
 Use this filter inside your template
@@ -299,4 +299,6 @@ To execute the tests run `kick test` inside the container. (See `.kick.yml`)
 
 ## About
 Text-Template was written by Matthias Leuffen <http://leuffen.de>
+
+Join [InfraCAMP](http://infracamp.org)
 
