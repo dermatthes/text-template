@@ -47,17 +47,41 @@ export COLOR_YELLOW='\e[1;33m'
 export COLOR_GRAY='\e[0;30m'
 export COLOR_LIGHT_GRAY='\e[0;37m'
 
+if [ "$DEV_CONTAINER_NAME" != "" ]
+then
+    echo -e $COLOR_RED "\n[ERR] Are you trying to run kickstart.sh from inside a kickstart container?!"
+    echo "(Detected DEV_CONTAINER_NAME is set in environment)"
+    echo -e $COLOR_NC
+    exit 4;
+fi;
+
 command -v curl >/dev/null 2>&1 || { echo -e "$COLOR_LIGHT_RED I require curl but it's not installed (run: 'apt-get install curl').  Aborting.$COLOR_NC" >&2; exit 1; }
 command -v docker >/dev/null 2>&1 || { echo -e "$COLOR_LIGHT_RED I require docker but it's not installed (see http://docker.io).  Aborting.$COLOR_NC" >&2; exit 1; }
 
-KICKSTART_DOC_URL="https://github.com/c7lab/kickstart/"
-KICKSTART_UPGRADE_URL="https://raw.githubusercontent.com/c7lab/kickstart/master/opt/kickstart.sh"
-KICKSTART_RELEASE_NOTES_URL="https://raw.githubusercontent.com/c7lab/kickstart/master/opt/kickstart-release-notes.txt"
-KICKSTART_VERSION_URL="https://raw.githubusercontent.com/c7lab/kickstart/master/opt/kickstart-release.txt"
-
-KICKSTART_CURRENT_VERSION="1.1.0"
 
 
+
+
+_KICKSTART_DOC_URL="https://github.com/c7lab/kickstart/"
+_KICKSTART_UPGRADE_URL="https://raw.githubusercontent.com/c7lab/kickstart/master/opt/kickstart.sh"
+_KICKSTART_RELEASE_NOTES_URL="https://raw.githubusercontent.com/c7lab/kickstart/master/opt/kickstart-release-notes.txt"
+_KICKSTART_VERSION_URL="https://raw.githubusercontent.com/c7lab/kickstart/master/opt/kickstart-release.txt"
+
+_KICKSTART_CURRENT_VERSION="1.1.1"
+
+##
+# This variables can be overwritten by ~/.kickstartconfig
+#
+KICKSTART_WIN_PATH=""
+KICKSTART_PORT=80
+KICKSTART_DOCKER_OPTS=""
+KICKSTART_DOCKER_RUN_OPTS=""
+
+if [ -e "$HOME/.kickstartconfig" ]
+then
+    echo "Loading $HOME/.kickstartconfig"
+    . $HOME/.kickstartconfig
+fi
 
 
 _usage() {
@@ -104,13 +128,13 @@ _print_header() {
   " $COLOR_YELLOW "
 +-------------------------------------------------------------------------------------------------------+
 | C7Lab Kickstart - DEVELOPER MODE                                                                      |
-| Version: $KICKSTART_CURRENT_VERSION
+| Version: $_KICKSTART_CURRENT_VERSION
 | Flavour: $USE_PIPF_VERSION (defined in 'from:'-section of .kick.yml)"
 
 
 
-    KICKSTART_NEWEST_VERSION=`curl -s "$KICKSTART_VERSION_URL"`
-    if [ "$KICKSTART_NEWEST_VERSION" != "$KICKSTART_CURRENT_VERSION" ]
+    KICKSTART_NEWEST_VERSION=`curl -s "$_KICKSTART_VERSION_URL"`
+    if [ "$KICKSTART_NEWEST_VERSION" != "$_KICKSTART_CURRENT_VERSION" ]
     then
         echo "|                                                           "
         echo "| UPDATE AVAILABLE: Head Version: $KICKSTART_NEWEST_VERSION"
@@ -127,16 +151,51 @@ _print_header() {
 
 run_shell() {
    echo -e $COLOR_CYAN;
-   echo "[kickstart.sh] Container '$CONTAINER_NAME' already running"
-   echo "===> [kickstart.sh] Opening new shell: "
-   echo -e $COLOR_NC
 
-   docker exec -it --user user -e "DEV_TTYID=[SUB]" $CONTAINER_NAME /bin/bash
 
-   echo -e $COLOR_CYAN;
-   echo "<=== [kickstart.sh] Leaving container."
-   echo -e $COLOR_NC
-   exit
+   if [ `docker ps | grep $CONTAINER_NAME | wc -l` -gt 0 ]
+   then
+        echo "[kickstart.sh] Container '$CONTAINER_NAME' already running"
+        echo "Starting shell... (please press enter)"
+        echo "";
+        docker exec -it --user user -e "DEV_TTYID=[SUB]" $CONTAINER_NAME /bin/bash
+        echo -e $COLOR_CYAN;
+        echo "<=== [kickstart.sh] Leaving container."
+        echo -e $COLOR_NC
+        exit 0;
+   fi
+
+   echo "[kickstart.s] Another container is already running!"
+   docker ps
+   echo ""
+   read -r -p "Your choice: (i)gnore, (s)hell, (k)ill, (a)bort?:" choice
+   case "$choice" in
+      i|I)
+        return 0;
+        ;;
+      s|S)
+        echo "===> [kickstart.sh] Opening new shell: "
+        echo -e $COLOR_NC
+
+        docker exec -it --user user -e "DEV_TTYID=[SUB]" `docker ps | grep "/kickstart/" | cut -d" " -f1` /bin/bash
+
+        echo -e $COLOR_CYAN;
+        echo "<=== [kickstart.sh] Leaving container."
+        echo -e $COLOR_NC
+        exit
+        ;;
+      k|K)
+        echo "Killing running kickstart containers..."
+        docker kill `docker ps | grep "/kickstart/" | cut -d" " -f1`
+        return 0;
+        ;;
+
+      *)
+        echo 'Response not valid'
+        exit 3;
+        ;;
+
+    esac
 }
 
 
@@ -158,19 +217,43 @@ ask_user() {
 }
 
 
+
+
+DOCKER_OPT_PARAMS=$KICKSTART_DOCKER_RUN_OPTS;
+if [ -e "$HOME/.ssh" ]
+then
+    echo "Mounting $HOME/.ssh..."
+    DOCKER_OPT_PARAMS="$DOCKER_OPT_PARAMS -v $HOME/.ssh:/home/user/.ssh";
+fi
+
+if [ -e "$HOME/.gitconfig" ]
+then
+    echo "Mounting $HOME/.gitconfig..."
+    DOCKER_OPT_PARAMS="$DOCKER_OPT_PARAMS -v $HOME/.gitconfig:/home/user/.gitconfig";
+fi
+
+
 run_container() {
     echo -e $COLOR_GREEN"Loading container '$USE_PIPF_VERSION'..."
     docker pull "$USE_PIPF_VERSION"
 
+	if [ "$KICKSTART_WIN_PATH" != "" ]
+	then
+		# For Windows users: Rewrite Path of bash to Windows path
+		# Will work only on drive C:/
+		PROGPATH="${PROGPATH/\/mnt\/c\//$KICKSTART_WIN_PATH}"
+	fi
+
     docker rm $CONTAINER_NAME
     echo -e $COLOR_WHITE "==> [$0] STARTING CONTAINER (docker run): Running container in dev-mode..." $COLOR_NC
-    docker run -it                                      \
+    docker $KICKSTART_DOCKER_OPTS run -it                                      \
         -v "$PROGPATH/:/opt/"                           \
         -e "DEV_CONTAINER_NAME=$CONTAINER_NAME"         \
         -e "DEV_TTYID=[MAIN]"                           \
         -e "DEV_UID=$UID"                               \
         -e "DEV_MODE=1"                                 \
-        -p 80:4200                                      \
+        -p $KICKSTART_PORT:4200                                      \
+        $DOCKER_OPT_PARAMS                              \
         --name $CONTAINER_NAME                          \
         $USE_PIPF_VERSION $ARGUMENT
 
@@ -179,7 +262,6 @@ run_container() {
     then
         echo -e $COLOR_RED
         echo "[kickstart.sh][FAIL]: Container startup failed."
-        echo "[kickstart.sh][FAIL]: Make sure you have Port 80 free and docker installed correctly."
         echo -e $COLOR_NC
         exit $status
     fi;
@@ -197,7 +279,7 @@ then
     echo "# Run ./kickstart.sh to start a development-container for this project" >> $PROGPATH/.kick.yml
     echo "version: 1" >> $PROGPATH/.kick.yml
     echo 'from: "continue/kickstart"' >> $PROGPATH/.kick.yml
-    echo "File created. See $KICKSTART_DOC_URL for more information";
+    echo "File created. See $_KICKSTART_DOC_URL for more information";
     echo ""
     sleep 2
 fi
@@ -222,13 +304,13 @@ while [ "$#" -gt 0 ]; do
     --tag=*) USE_PIPF_VERSION="-t ${1#*=}"; shift 1;;
 
     --upgrade)
-        echo "Checking for updates from $KICKSTART_UPGRADE_URL..."
-        curl "$KICKSTART_RELEASE_NOTES_URL"
+        echo "Checking for updates from $_KICKSTART_UPGRADE_URL..."
+        curl "$_KICKSTART_RELEASE_NOTES_URL"
 
         ask_user "Do you want to upgrade?"
 
         echo "Writing to $0..."
-        curl "$KICKSTART_UPGRADE_URL" -o "$0"
+        curl "$_KICKSTART_UPGRADE_URL" -o "$0"
         echo "Done"
         echo "Calling on update trigger: $0 --on-after-update"
         $0 --on-after-upgrade
@@ -253,7 +335,7 @@ done
 
 ARGUMENT=$@;
 _print_header
-if [ `docker ps | grep "$CONTAINER_NAME" | wc -l` -gt 0 ]
+if [ `docker ps | grep "/kickstart/" | wc -l` -gt 0 ]
 then
     run_shell
 fi;

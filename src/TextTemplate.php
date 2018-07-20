@@ -236,7 +236,8 @@ class TextTemplate {
         // And ending with newline by single line
         //
         // Caution: Lookahead at the end required to strip multiple lines!
-        $input = preg_replace("/\\n\s*(\{(?!\=)[^\\n}]+?\})(?=[\\n\{])/m", '$1', $input);
+        $input = preg_replace("#\\n\h*(\{(?!=)[^\\n}]+?\})\h*\\n#m", "\$1\n", $input);
+        $input = preg_replace("#\}\\h*\\n\h*(\{(?!=))#m", "}\$1", $input);
         return $input;
     }
 
@@ -251,7 +252,7 @@ class TextTemplate {
             if (is_array($value)) {
                 if ( ! isset ( $value[$cur] )) {
                     if ( ! $softFail) {
-                        throw new TemplateParsingException("ParsingError: Can't parse element: '{$name}' Error on subelement: '$cur'");
+                        throw new UndefinedVariableException("ParsingError: Can't parse element: '{$name}' Error on subelement: '$cur'", $name);
                     }
                     $value = NULL;
                 } else {
@@ -262,7 +263,7 @@ class TextTemplate {
                 if (is_object($value)) {
                     if ( ! isset ( $value->$cur )) {
                         if ( ! $softFail) {
-                            throw new TemplateParsingException("ParsingError: Can't parse element: '{$name}' Error on subelement: '$cur'");
+                            throw new UndefinedVariableException("ParsingError: Can't parse element: '{$name}' Error on subelement: '$cur'", $name);
 
                         }
                         $value = NULL;
@@ -271,7 +272,7 @@ class TextTemplate {
                     }
                 } else {
                     if ( ! $softFail) {
-                        throw new TemplateParsingException("ParsingError: Can't parse element: '{$name}' Error on subelement: '$cur'");
+                        throw new UndefinedVariableException("ParsingError: Can't parse element: '{$name}' Error on subelement: '$cur'", $name);
                     }
                     $value = NULL;
                 }
@@ -405,14 +406,22 @@ class TextTemplate {
             $ifConditionDidMatch = false;
         }
 
-        if ( ! preg_match('/([\"\']?.*?[\"\']?)\s*(==|<|>|!=)\s*([\"\']?.*[\"\']?)/i', $cmdParam, $matches)) {
+        if ( ! preg_match('/(([\"\']?.*?[\"\']?)\s*(==|<|>|!=)\s*([\"\']?.*[\"\']?)|((!?)\s*(.*)))/i', $cmdParam, $matches)) {
             return "!! Invalid command sequence: '$cmdParam' !!";
         }
+        if(count($matches) == 8) {
+          $comp1 = $this->_getItemValue(trim($matches[7]), $context, $softFail);
+          $operator = '==';
+          $comp2 = $matches[6] ? FALSE : TRUE; // ! prefix
+        } elseif(count($matches) == 5){
+          $comp1 = $this->_getItemValue(trim($matches[2]), $context, $softFail);
+          $operator = trim($matches[3]);
+          $comp2 = $this->_getItemValue(trim($matches[4]), $context, $softFail);
+        } else {
+          return "!! Invalid command sequence: '$cmdParam' !!";
+        }
 
-        $comp1 = $this->_getItemValue(trim($matches[1]), $context, $softFail);
-        $comp2 = $this->_getItemValue(trim($matches[3]), $context, $softFail);
-
-        switch ($matches[2]) {
+        switch ($operator) {
             case "==":
                 $doIf = ($comp1 == $comp2);
                 break;

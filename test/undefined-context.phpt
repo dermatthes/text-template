@@ -12,11 +12,21 @@ Assert::throws(function() {
     $in = "{= some.var.bla}";
     $tt = new TextTemplate($in);
     $tt->apply(["some"], false);
-}, TemplateParsingException::class);
+}, UndefinedVariableException::class);
 
 Assert::throws(function() {
     $in = "{= some.var}";
     $tt = new TextTemplate($in);
     $obj = new \stdClass();
     $tt->apply($obj, false);
-}, TemplateParsingException::class);
+}, UndefinedVariableException::class);
+
+try {
+    $in = "{= some.var}";
+    $tt = new TextTemplate($in);
+    $obj = new \stdClass();
+    $tt->apply($obj, false);
+    Assert::fail("No Exception was thrown");
+} catch (UndefinedVariableException $e) {
+    Assert::equal("some.var", $e->getTriggerVarName());
+}

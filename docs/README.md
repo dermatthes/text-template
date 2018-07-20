@@ -118,6 +118,17 @@ Hello World
 {/if}
 ```
 
+Shortcut: Test if a variable is null:
+
+```
+{if someVarName}
+    someVarName is set!
+{/if}
+{if !someVarName}
+    someVarName is not set!
+{/if}
+```
+
 Limitation: Logical connections like OR / AND are not possible at the moment. Maybe in the future.
 
 ## Conditions (else)
@@ -257,6 +268,28 @@ To see all Parameters passed to the template use:
 
 It will output the structure of the current context.
 
+
+## Dealing with undefined Variables
+
+By default text-template will not throw any exceptions when a template
+tries to access an undefined variable. 
+
+To improve debugging, you can switch this behaviour by setting `$softFail` to
+`false` (Parameter 2 of `apply()` function):
+
+```php
+try {
+    $tt = new TextTemplate("{=someUndefinedName}");
+    echo $tt->apply([], false);
+    //                  ^^^^^
+} catch (UndefinedVariableExceptions $e) {
+    echo "UndefinedVariable: {$e->getTriggerVarName()}"
+}
+```
+will return
+```
+UndefinedVariable: someUndefinedName
+```
 
 ## Limitations
 
