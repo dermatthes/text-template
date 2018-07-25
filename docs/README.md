@@ -260,15 +260,15 @@ This example will replace the htmlspecialchars() escaper by the strip_tags() fun
 Sections are like functions but provide the content they enclose:
 
 ```
-{section name="someName"}
+{sectionxy name="someName"}
 Some Content
-{/section}
+{/sectionxy}
 ```
 
 ```
-{section name="someName" > out}
+{sectionxy name="someName" > out}
 Some Content
-{/section}
+{/sectionxy}
 
 {= out}
 ```
@@ -276,7 +276,7 @@ Some Content
 To use sections you must just set the callback:
 
 ```php
-$textTemplate->setSectionCallback(function ($params, $content, $context, $cmdParam) {
+$textTemplate->setSectionCallback("sectionxy", function ($content, $params, $command, $context, $cmdParam) {
     return "Content to replace section content with";
 });
 ```

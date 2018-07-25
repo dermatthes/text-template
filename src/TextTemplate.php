@@ -53,9 +53,9 @@ class TextTemplate {
     private $mFunctions = [];
 
     /**
-     * @var null|callable
+     * @var callable[]
      */
-    private $sectionCallback = null;
+    private $sections = [];
 
     public function __construct ($text="") {
 
@@ -71,10 +71,9 @@ class TextTemplate {
      *
      * @param $enableSectionMode
      */
-    public function setSectionCallback($sectionCallback)
+    public function addSection($name, $sectionCallback)
     {
-
-        $this->sectionCallback = $sectionCallback;
+        $this->sections[$name] = $sectionCallback;
     }
 
 
@@ -193,11 +192,14 @@ class TextTemplate {
         $indexCounter = 0;
         $nestingIndex = [];
 
+        $blockTags = array_keys($this->sections);
+        $blockTags[] = "if";
+        $blockTags[] = "for";
+
         $lines = explode("\n", $input);
         for ($li=0; $li < count ($lines); $li++) {
             $lines[$li] = preg_replace_callback('/\{(?!=)\s*(\/?)\s*([a-z]+)(.*?)\}/im',
-                function ($matches) use (&$nestingIndex, &$indexCounter, &$li) {
-                    $blockTags = ["if", "for", "section"];
+                function ($matches) use (&$nestingIndex, &$indexCounter, &$li, $blockTags) {
                     $slash = $matches[1];
                     $tag = $matches[2];
                     $rest = $matches[3];
@@ -470,19 +472,21 @@ class TextTemplate {
 
 
 
-    private function _runSection(&$context, $content, $cmdParam, $softFail)
+    private function _runSection($command, &$context, $content, $cmdParam, $softFail)
     {
-        if ($this->sectionCallback === null) {
-            return $this->_parseBlock($context, $content, $softFail);
+        if ( ! isset($this->sections[$command])) {
+            if ($softFail === true)
+                return "!!ERR:Undefined section '$command'!!";
+            throw new TemplateParsingException("Undefined section {$command}...{/$command} in block '$cmdParam'");
         }
 
         $funcParams = $this->_parseFunctionParameters($cmdParam,  $context, $softFail);
         $content = $this->_parseBlock($context, $content, $softFail);
 
         try {
-            $func = $this->sectionCallback;
+            $func = $this->sections[$command];
             $out = $func(
-                $funcParams["paramArr"], $content, $context, $cmdParam
+                $content, $funcParams["paramArr"], $command, $context, $cmdParam
             );
             if ($funcParams["retAs"] !== null) {
                 $context[$funcParams["retAs"]] = $out;
@@ -526,8 +530,8 @@ class TextTemplate {
 
     private function _parseBlock (&$context, $block, $softFail) {
         // (?!\{): Lookahead Regex: Don't touch double {{
-
-        $result = preg_replace_callback('/(\{(?!=)((?<bcommand>if|for|section)(?<bnestingLevel>[0-9]+))(?<bcmdParam>.*?)\}(?<bcontent>.*?)\n?\{\/\2\}|\{(?!=)(?<command>[a-z]+)\s*(?<cmdParam>.*?)\}|\{\=(?<value>.+?)\})/ism',
+        $bCommands = implode("|", array_keys($this->sections));
+        $result = preg_replace_callback('/(\{(?!=)((?<bcommand>if|for|' . $bCommands . ')(?<bnestingLevel>[0-9]+))(?<bcmdParam>.*?)\}(?<bcontent>.*?)\n?\{\/\2\}|\{(?!=)(?<command>[a-z]+)\s*(?<cmdParam>.*?)\}|\{\=(?<value>.+?)\})/ism',
             function ($matches) use (&$context, $softFail) {
                 if (isset ($matches["value"]) && $matches["value"] != null) {
                     return $this->_parseValueOfTags($context, $matches["value"], $softFail);
@@ -557,13 +561,9 @@ class TextTemplate {
                                 $this->ifConditionMatch[$nestingLevel]
                             );
 
-                        case "section":
-                            return $this->_runSection($context, $content, $cmdParam, $softFail);
 
                         default:
-                            if ( ! $softFail)
-                                throw new TemplateParsingException("Invalid block-command '$command' in block '{$matches[0]}'");
-                            return "!! Invalid block-command: '$command' !!";
+                            return $this->_runSection($command, $context, $content, $cmdParam, $softFail);
                     }
                 } else {
                     // Regular Commands

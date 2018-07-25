@@ -8,6 +8,8 @@
 
 namespace Test;
 require __DIR__ . "/../vendor/autoload.php";
+
+use http\Exception\InvalidArgumentException;
 use Leuffen\TextTemplate\TextTemplate;
 use Tester\Assert;
 use Tester\Environment;
@@ -38,8 +40,10 @@ EOT;
 
 $template = new TextTemplate($tpl);
 $sec = [];
-$template->setSectionCallback(function ($params, $content, $context, $cmdParam) use (&$sec) {
+$template->addSection("section", function ($content, $params, $command, $context, $cmdParam) use (&$sec) {
      $sec[$params["name"]] = $content;
+     if ($command !== "section")
+         throw new InvalidArgumentException("Command missing");
      return "*" . trim ($content) . "*";
 });
 $textResult = $template->apply([]);
