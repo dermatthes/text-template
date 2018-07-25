@@ -4,11 +4,11 @@
 version: 1
 
 ## Use Gaia-flavor (apache2 php7.1) see: https://github.com/c7lab/kickstart-flavor-gaia
-from: "continue/kickstart-flavor-gaia"
+from: "infracamp/kickstart-flavor-gaia"
 
 
 command:
-  init:
+  build:
     - "composer update"
 
   test:

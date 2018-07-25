@@ -156,7 +156,7 @@ Goodbye World
 
 You can register user-defined functions.
 
-```
+```php
 $template->addFunctampion("sayHello", 
     function ($paramArr, $command, $context, $cmdParam) {
         return "Hello " . $paramArr["msg"];
@@ -255,6 +255,31 @@ $tt->setDefaultFilter("singleLine");
 
 This example will replace the htmlspecialchars() escaper by the strip_tags() function.
 
+## Sections
+
+Sections are like functions but provide the content they enclose:
+
+```
+{section name="someName"}
+Some Content
+{/section}
+```
+
+```
+{section name="someName" > out}
+Some Content
+{/section}
+
+{= out}
+```
+
+To use sections you must just set the callback:
+
+```php
+$textTemplate->setSectionCallback(function ($params, $content, $context, $cmdParam) {
+    return "Content to replace section content with";
+});
+```
 
 
 

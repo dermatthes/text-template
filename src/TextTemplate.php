@@ -52,11 +52,28 @@ class TextTemplate {
     private $mFilter = [];
     private $mFunctions = [];
 
+    /**
+     * @var null|callable
+     */
+    private $sectionCallback = null;
+
     public function __construct ($text="") {
 
         $this->mTemplateText = $text;
         $this->mFilter = self::$__DEFAULT_FILTER;
         $this->mFunctions = self::$__DEFAULT_FUNCTION;
+    }
+
+    /**
+     * Section mode.
+     *
+     * This callback is called whenever a {section} is found.
+     *
+     * @param $enableSectionMode
+     */
+    public function setSectionCallback(callable $sectionCallback)
+    {
+        $this->sectionCallback = $sectionCallback;
     }
 
     /**
@@ -178,7 +195,7 @@ class TextTemplate {
         for ($li=0; $li < count ($lines); $li++) {
             $lines[$li] = preg_replace_callback('/\{(?!=)\s*(\/?)\s*([a-z]+)(.*?)\}/im',
                 function ($matches) use (&$nestingIndex, &$indexCounter, &$li) {
-                    $blockTags = ["if", "for"];
+                    $blockTags = ["if", "for", "section"];
                     $slash = $matches[1];
                     $tag = $matches[2];
                     $rest = $matches[3];
@@ -449,10 +466,66 @@ class TextTemplate {
 
     private $ifConditionMatch = [];
 
+
+
+    private function _runSection(&$context, $content, $cmdParam, $softFail)
+    {
+        if ($this->sectionCallback === null) {
+            return $this->_parseBlock($context, $content, $softFail);
+        }
+
+        $funcParams = $this->_parseFunctionParameters($cmdParam,  $context, $softFail);
+        $content = $this->_parseBlock($context, $content, $softFail);
+
+        try {
+            $func = $this->sectionCallback;
+            $out = $func(
+                $funcParams["paramArr"], $content, $context, $cmdParam
+            );
+            if ($funcParams["retAs"] !== null) {
+                $context[$funcParams["retAs"]] = $out;
+                return "";
+            } else {
+                return $out;
+            }
+        } catch (Exception $e) {
+            if ($funcParams["exAs"] !== null) {
+                $context[$funcParams["exAs"]] = $e->getMessage();
+                return "";
+            } else {
+                throw $e;
+            }
+        }
+    }
+
+
+    private function _parseFunctionParameters (string $cmdParam, &$context, $softFail)
+    {
+        $paramArr = [];
+        $cmdParamRest = preg_replace_callback('/(?<name>[a-z0-9_]+)\s*=\s*(?<sval>((\"|\')(.*?)\4)|[a-z0-9\.\_]+)/i', function ($matches) use(&$paramArr, &$context, $softFail) {
+            $paramArr[$matches["name"]] = $this->_getItemValue($matches["sval"], $context, $softFail);
+        }, $cmdParam);
+
+        $retAs = null;
+        $exAs = null;
+
+        $cmdParamRest = preg_replace_callback("/\!\>\s*([a-z0-9\_]+)/i", function ($matches) use (&$exAs) {
+            $exAs = $matches[1];
+        }, $cmdParamRest);
+
+        $cmdParamRest = preg_replace_callback("/\>\s*([a-z0-9\_]+)/i", function ($matches) use (&$retAs) {
+            $retAs = $matches[1];
+        }, $cmdParamRest);
+
+        return ["paramArr" => $paramArr, "retAs" => $retAs, "exAs" => $exAs];
+    }
+
+
+
     private function _parseBlock (&$context, $block, $softFail) {
         // (?!\{): Lookahead Regex: Don't touch double {{
 
-        $result = preg_replace_callback('/(\{(?!=)((?<bcommand>if|for)(?<bnestingLevel>[0-9]+))(?<bcmdParam>.*?)\}(?<bcontent>.*?)\n?\{\/\2\}|\{(?!=)(?<command>[a-z]+)\s*(?<cmdParam>.*?)\}|\{\=(?<value>.+?)\})/ism',
+        $result = preg_replace_callback('/(\{(?!=)((?<bcommand>if|for|section)(?<bnestingLevel>[0-9]+))(?<bcmdParam>.*?)\}(?<bcontent>.*?)\n?\{\/\2\}|\{(?!=)(?<command>[a-z]+)\s*(?<cmdParam>.*?)\}|\{\=(?<value>.+?)\})/ism',
             function ($matches) use (&$context, $softFail) {
                 if (isset ($matches["value"]) && $matches["value"] != null) {
                     return $this->_parseValueOfTags($context, $matches["value"], $softFail);
@@ -482,6 +555,9 @@ class TextTemplate {
                                 $this->ifConditionMatch[$nestingLevel]
                             );
 
+                        case "section":
+                            return $this->_runSection($context, $content, $cmdParam, $softFail);
+
                         default:
                             if ( ! $softFail)
                                 throw new TemplateParsingException("Invalid block-command '$command' in block '{$matches[0]}'");
@@ -492,10 +568,7 @@ class TextTemplate {
                     $command = $matches["command"];
                     $cmdParam = $matches["cmdParam"];
 
-                    $paramArr = [];
-                    $cmdParamRest = preg_replace_callback('/(?<name>[a-z0-9_]+)\s*=\s*(?<sval>((\"|\')(.*?)\4)|[a-z0-9\.\_]+)/i', function ($matches) use(&$paramArr, &$context, $softFail) {
-                        $paramArr[$matches["name"]] = $this->_getItemValue($matches["sval"], $context, $softFail);
-                    }, $cmdParam);
+                    $funcParams = $this->_parseFunctionParameters($cmdParam, $context, $softFail);
 
                     $context["lastErr"] = null;
 
@@ -504,31 +577,19 @@ class TextTemplate {
                             return "!!ERR:Undefined function '$command'!!";
                         throw new TemplateParsingException("Undefined function '$command' in block '$matches[0]'");
                     }
-
-                    $retAs = null;
-                    $exAs = null;
-
-                    $cmdParamRest = preg_replace_callback("/\!\>\s*([a-z0-9\_]+)/i", function ($matches) use (&$exAs) {
-                        $exAs = $matches[1];
-                    }, $cmdParamRest);
-
-                    $cmdParamRest = preg_replace_callback("/\>\s*([a-z0-9\_]+)/i", function ($matches) use (&$retAs) {
-                        $retAs = $matches[1];
-                    }, $cmdParamRest);
-
                     try {
                         $func = $this->mFunctions[$command];
                         $out = $func(
-                            $paramArr, $command, $context, $cmdParam
+                            $funcParams["paramArr"], $command, $context, $cmdParam
                         );
-                        if ($retAs !== null) {
-                            $context[$retAs] = $out;
+                        if ($funcParams["retAs"] !== null) {
+                            $context[$funcParams["retAs"]] = $out;
                         } else {
                             return $out;
                         }
                     } catch (Exception $e) {
-                        if ($exAs !== null) {
-                            $context[$exAs] = $e->getMessage();
+                        if ($funcParams["exAs"] !== null) {
+                            $context[$funcParams["exAs"]] = $e->getMessage();
                         } else {
                             throw $e;
                         }
