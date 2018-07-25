@@ -222,8 +222,13 @@ class TextTemplate {
 
                         return $out;
                     } else if ($slash == "/") {
-                        if ( ! isset ($nestingIndex[$tag]))
-                            throw new TemplateParsingException("Line {$li}: Opening tag not found for closing tag: '{$matches[0]}'");
+                        if ( ! isset ($nestingIndex[$tag])) {
+                            if ( ! isset ($this->sections[$tag]) && ! in_array($tag, ["if", "for"]))
+                                throw new TemplateParsingException("Line {$li}: No callback registred for section {{$tag}}{/{$tag}}");
+                            throw new TemplateParsingException(
+                                "Line {$li}: Opening tag not found for closing tag: '{$matches[0]}'"
+                            );
+                        }
                         if (count ($nestingIndex[$tag]) == 0)
                             throw new TemplateParsingException("Line {$li}: Nesting level does not match for closing tag: '{$matches[0]}'");
                         $curIndex = array_pop($nestingIndex[$tag]);

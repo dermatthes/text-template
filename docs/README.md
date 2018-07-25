@@ -276,7 +276,7 @@ Some Content
 To use sections you must just set the callback:
 
 ```php
-$textTemplate->setSectionCallback("sectionxy", function ($content, $params, $command, $context, $cmdParam) {
+$textTemplate->addSection("sectionxy", function ($content, $params, $command, $context, $cmdParam) {
     return "Content to replace section content with";
 });
 ```
