@@ -71,10 +71,12 @@ class TextTemplate {
      *
      * @param $enableSectionMode
      */
-    public function setSectionCallback(callable $sectionCallback)
+    public function setSectionCallback($sectionCallback)
     {
+
         $this->sectionCallback = $sectionCallback;
     }
+
 
     /**
      * Set the default Filter
@@ -499,7 +501,7 @@ class TextTemplate {
     }
 
 
-    private function _parseFunctionParameters (string $cmdParam, &$context, $softFail)
+    private function _parseFunctionParameters ($cmdParam, &$context, $softFail)
     {
         $paramArr = [];
         $cmdParamRest = preg_replace_callback('/(?<name>[a-z0-9_]+)\s*=\s*(?<sval>((\"|\')(.*?)\4)|[a-z0-9\.\_]+)/i', function ($matches) use(&$paramArr, &$context, $softFail) {
@@ -614,6 +616,10 @@ class TextTemplate {
         return $this;
     }
 
+    public function setTemplate($text)
+    {
+        $this->mTemplateText = $text;
+    }
 
     /**
      * Parse Tokens in Text (Search for $(name.subname.subname)) of
