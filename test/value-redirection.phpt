@@ -36,23 +36,19 @@ $tpl = <<<EOT
 EOT;
 
 $compare = <<<EOT
--A-*AAA*
+-A-
 -B-
 -C-
-*BBB*
+
+    AAA
+-D-
+
+    BBB
+    BBB
 EOT;
 
 
 $template = new TextTemplate($tpl);
-$sec = [];
-$template->addSection("section", function ($content, $params, $command, $context, $cmdParam) use (&$sec) {
-    $sec[$params["name"]] = $content;
-    if ($command !== "section")
-        throw new InvalidArgumentException("Command missing");
-    return "*" . trim ($content) . "*";
-});
 $textResult = $template->apply([]);
 
 Assert::equal($compare, $textResult);
-Assert::equal("AAA", trim($sec["A"]));
-Assert::equal("BBB", trim($sec["B"]));
