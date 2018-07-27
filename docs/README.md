@@ -282,6 +282,21 @@ $textTemplate->addSection("sectionxy", function ($content, $params, $command, $c
 ```
 
 
+## Function return redirection
+
+Append output to a variable.
+
+```
+{print >> out}
+A
+{/print}
+{print >> out}
+B
+{/print}
+
+{= out}
+```
+
 
 ## Debugging the Parameters
 

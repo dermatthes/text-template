@@ -62,6 +62,9 @@ class TextTemplate {
         $this->mTemplateText = $text;
         $this->mFilter = self::$__DEFAULT_FILTER;
         $this->mFunctions = self::$__DEFAULT_FUNCTION;
+        $this->sections["print"] = function ($content) {
+            return $content;
+        };
     }
 
     /**
@@ -494,7 +497,13 @@ class TextTemplate {
                 $content, $funcParams["paramArr"], $command, $context, $cmdParam
             );
             if ($funcParams["retAs"] !== null) {
-                $context[$funcParams["retAs"]] = $out;
+                if ($funcParams["append"]) {
+                    if ( ! isset ($context[$funcParams["retAs"]]))
+                        $context[$funcParams["retAs"]] = "";
+                    $context[$funcParams["retAs"]] .= $out;
+                } else {
+                    $context[$funcParams["retAs"]] = $out;
+                }
                 return "";
             } else {
                 return $out;
@@ -524,11 +533,15 @@ class TextTemplate {
             $exAs = $matches[1];
         }, $cmdParamRest);
 
-        $cmdParamRest = preg_replace_callback("/\>\s*([a-z0-9\_]+)/i", function ($matches) use (&$retAs) {
-            $retAs = $matches[1];
+        $append = false;
+        $cmdParamRest = preg_replace_callback("/(\>|\>\>)\s*([a-z0-9\_]+)/i", function ($matches) use (&$retAs, &$append) {
+            if ($matches[1] == ">>") {
+                $append = true;
+            }
+            $retAs = $matches[2];
         }, $cmdParamRest);
 
-        return ["paramArr" => $paramArr, "retAs" => $retAs, "exAs" => $exAs];
+        return ["paramArr" => $paramArr, "retAs" => $retAs, "exAs" => $exAs, "append" => $append];
     }
 
 
@@ -590,7 +603,13 @@ class TextTemplate {
                             $funcParams["paramArr"], $command, $context, $cmdParam
                         );
                         if ($funcParams["retAs"] !== null) {
-                            $context[$funcParams["retAs"]] = $out;
+                            if ($funcParams["append"]) {
+                                if ( ! isset ($context[$funcParams["retAs"]]))
+                                    $context[$funcParams["retAs"]] = "";
+                                $context[$funcParams["retAs"]] .= $out;
+                            } else {
+                                $context[$funcParams["retAs"]] = $out;
+                            }
                         } else {
                             return $out;
                         }
