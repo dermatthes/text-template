@@ -46,7 +46,7 @@ class TextTemplate {
 
     public static $__DEFAULT_FILTER = [];
     public static $__DEFAULT_FUNCTION = [];
-
+    public static $__DEFAULT_SECTIONS = [];
 
     private $mTemplateText;
     private $mFilter = [];
@@ -62,9 +62,7 @@ class TextTemplate {
         $this->mTemplateText = $text;
         $this->mFilter = self::$__DEFAULT_FILTER;
         $this->mFunctions = self::$__DEFAULT_FUNCTION;
-        $this->sections["print"] = function ($content) {
-            return $content;
-        };
+        $this->sections = self::$__DEFAULT_SECTIONS;
     }
 
     /**
@@ -201,7 +199,7 @@ class TextTemplate {
 
         $lines = explode("\n", $input);
         for ($li=0; $li < count ($lines); $li++) {
-            $lines[$li] = preg_replace_callback('/\{(?!=)\s*(\/?)\s*([a-z]+)(.*?)\}/im',
+            $lines[$li] = preg_replace_callback('/\{(?!=)\s*(\/?)\s*([a-z0-9\_]+)(.*?)\}/im',
                 function ($matches) use (&$nestingIndex, &$indexCounter, &$li, $blockTags) {
                     $slash = $matches[1];
                     $tag = $matches[2];

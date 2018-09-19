@@ -8,3 +8,6 @@
 #7a inflect     : abc123__
 #7b inflect     : abc123__
 #7c sanitize    : abc123
+#8 strip_empty_lines
+line1
+line2

@@ -282,6 +282,19 @@ $textTemplate->addSection("sectionxy", function ($content, $params, $command, $c
 ```
 
 
+### Stripping empty lines
+
+
+
+```
+{strip_empty_lines}
+line1
+
+line2
+{/strip_empty_lines}
+```
+
+
 ## Function return redirection
 
 Append output to a variable.

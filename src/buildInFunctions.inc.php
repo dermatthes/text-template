@@ -26,3 +26,14 @@ TextTemplate::$__DEFAULT_FUNCTION["set"] =
             $context[$name] = $val;
         return "";
     };
+
+
+
+TextTemplate::$__DEFAULT_SECTIONS["print"] =  function ($content, $params, $command, $context, $cmdParam) {
+    return $content;
+};
+
+
+TextTemplate::$__DEFAULT_SECTIONS["strip_empty_lines"] =  function ($content, $params, $command, $context, $cmdParam) {
+    return rtrim (preg_replace("|\n+|m", "\n", $content));
+};
