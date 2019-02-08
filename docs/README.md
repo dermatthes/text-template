@@ -166,13 +166,13 @@ $template->addFunctampion("sayHello",
 
 Call the function and output into template
 
-```
+```text
 {sayHello msg="Joe"}
 ```
 
 or inject the Result into the context for further processing:
 
-```
+```text
 {sayHello msg="Joe" > out}
 {=out}
 ```
@@ -189,7 +189,7 @@ Or use `!break` or `!continue` to break/continue a loop
 
 Use `{# #}` to add comments (will be stripped from output
 
-```
+```text
 Template {# Some Comment #}
 {# Some
 Multiline
@@ -208,16 +208,16 @@ $tt->addFilter ("currency", function ($input, $decimals=2, $decSeparator=",", $t
     return number_format ($input, $decimals, $decSeparator, $thousandsSeparator);
 });
 ```
+
 Call the filter with parameters (parameter-separator `:`):
 
-```
+```text
 {= variable | currency:2:,:. }
-```amp
-
+```
 
 Use this filter inside your template
 
-```
+```text
 {= someVariable | currency }
 ```
 
@@ -233,8 +233,8 @@ Use this filter inside your template
 | inflect:tag | Convert to underline tag |
 | sanitize:hostname | Convert to hostname |
 
-
 ### Replacing the default-Filter
+
 By default and for security reason all values will be escaped using the "_DEFAULT_"-Filter. (except if
 "raw" was selected within the filter section)
 
@@ -259,13 +259,13 @@ This example will replace the htmlspecialchars() escaper by the strip_tags() fun
 
 Sections are like functions but provide the content they enclose:
 
-```
+```text
 {sectionxy name="someName"}
 Some Content
 {/sectionxy}
 ```
 
-```
+```text
 {sectionxy name="someName" > out}
 Some Content
 {/sectionxy}
@@ -286,7 +286,7 @@ $textTemplate->addSection("sectionxy", function ($content, $params, $command, $c
 
 
 
-```
+```text
 {strip_empty_lines}
 line1
 
@@ -299,7 +299,7 @@ line2
 
 Append output to a variable.
 
-```
+```text
 {print >> out}
 A
 {/print}
@@ -315,7 +315,7 @@ B
 
 To see all Parameters passed to the template use:
 
-```
+```text
 {= __CONTEXT__ | raw}
 ```
 
