@@ -32,7 +32,6 @@
 
 namespace Leuffen\TextTemplate;
 
-use Symfony\Component\Config\Definition\Exception\Exception;
 
 // Require only when Class is first loaded by classloader
 require_once __DIR__."/buildInFilters.inc.php";
@@ -611,7 +610,7 @@ class TextTemplate {
                         } else {
                             return $out;
                         }
-                    } catch (Exception $e) {
+                    } catch (\Exception $e) {
                         if ($funcParams["exAs"] !== null) {
                             $context[$funcParams["exAs"]] = $e->getMessage();
                         } else {

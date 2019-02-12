@@ -3,8 +3,6 @@ namespace Leuffen\TextTemplate;
 
 require __DIR__ . "/../vendor/autoload.php";
 
-
-use Symfony\Component\Config\Definition\Exception\Exception;
 use Tester\Assert;
 
 /**
@@ -39,7 +37,7 @@ Assert::equal('someFunc({"arg1":"StrVal","arg2":null})', $out);
 
 
 $tt->addFunction("throw", function () {
-    throw new Exception("Some Exception");
+    throw new \Exception("Some Exception");
 });
 
 $in = "{throw !> err}{if err != null}{= err}{/if}";
