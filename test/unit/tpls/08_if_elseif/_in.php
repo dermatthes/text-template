@@ -1,5 +1,5 @@
 <?php
 
 return [
-    "boolVal" => TRUE
+    "boolVal" => true
 ];

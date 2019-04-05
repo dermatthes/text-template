@@ -1,8 +1,8 @@
 <?php
 
 return [
-    "boolVal" => TRUE,
-    "falseVal" => FALSE,
+    "boolVal" => true,
+    "falseVal" => false,
     "value1" => "Some Value",
     "floatVal" => 1.234,
     "emptyVal" => null

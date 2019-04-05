@@ -1,6 +1,6 @@
 <?php
 
 return [
-    "t1" => TRUE,
-    "t2" => TRUE
+    "t1" => true,
+    "t2" => true
 ];
