@@ -1,7 +1,7 @@
 <?php
 
 return [
-    "boolVal" => TRUE,
-    "boolVal2" => TRUE,
+    "boolVal" => true,
+    "boolVal2" => true,
     "value1" => "Some Value",
 ];

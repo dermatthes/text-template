@@ -1,6 +1,6 @@
 <?php
 
 return [
-    "boolVal" => TRUE,
+    "boolVal" => true,
     "textVal" => "text"
 ];

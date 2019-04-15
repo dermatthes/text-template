@@ -1,7 +1,7 @@
 <?php
 
 return [
-    "boolVal" => TRUE,
+    "boolVal" => true,
     "arrVal1" => [
         "a", "b", "c"
     ],
