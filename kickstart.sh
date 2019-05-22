@@ -33,6 +33,9 @@ CONTAINER_NAME=
 # The image (e.g. infracamp/kickstart-flavor-base:testing) specified in .kick.yml from:-section
 FROM_IMAGE=
 
+# The Host IP Address. Leave empty to autodetect.
+KICKSTART_HOST_IP=
+
 ############################
 ### CODE BELOW           ###
 ############################
@@ -44,27 +47,6 @@ trap 'on_error $LINENO' ERR;
 PROGNAME=$(basename $0)
 PROGPATH="$( cd "$(dirname "$0")" ; pwd -P )"   # The absolute path to kickstart.sh
 
-function on_error () {
-    echo "Error: ${PROGNAME} on line $1" 1>&2
-    exit 1
-}
-
-
-
-KICKSTART_HOST_IP=$(hostname -i | awk '{print $1;}')
-if [ "$KICKSTART_HOST_IP" == "" ]
-then
-    # Workaround for systems not supporting hostname -i (MAC)
-    # See doc/workaround-plattforms.md for more about this
-    KICKSTART_HOST_IP=$(host `hostname`|awk '{print $NF}')
-fi;
-
-
-
-
-
-
-CONTAINER_NAME=${PWD##*/}
 if test -t 1; then
     # see if it supports colors...
     ncolors=$(tput colors)
@@ -88,6 +70,39 @@ if test -t 1; then
         export COLOR_LIGHT_GRAY='\e[0;37m'
     fi;
 fi;
+
+
+
+function on_error () {
+    local exit_code=$?
+    local prog=$BASH_COMMAND
+
+    echo -e "\e[1;101;30m\n" 1>&2
+    echo -en "KICKSTART ERROR: '$prog' (Exit code: $exit_code on ${PROGNAME} line $1)\n" 1>&2
+    echo -e "\e[0m" 1>&2
+
+    exit 1
+}
+
+
+if [[ "$KICKSTART_HOST_IP" == "" ]]
+then
+    # Autodetect for ubuntu, arch
+    KICKSTART_HOST_IP=$(ip route list | grep -v default | grep -v linkdown | grep src | tail -1 | awk 'match($0, / [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/){print substr($0, RSTART+1, RLENGTH-1)}' 2> /dev/null)
+fi;
+if [[ "$KICKSTART_HOST_IP" == "" ]]
+then
+    # Workaround for systems not supporting hostname -i (MAC)
+    # See doc/workaround-plattforms.md for more about this
+    KICKSTART_HOST_IP=$(ping -c 1 $(hostname) | grep icmp_seq | awk 'match($0,/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/){print substr($0, RSTART, RLENGTH)}')
+fi;
+
+
+if [[ "$CONTAINER_NAME" == "" ]]
+then
+    CONTAINER_NAME=${PWD##*/}
+fi;
+
 
 
 KICKSTART_CACHE_DIR="$HOME/.kick_cache"
@@ -120,6 +135,25 @@ _KICKSTART_CURRENT_VERSION="1.2.0"
 # This variables can be overwritten by ~/.kickstartconfig
 #
 KICKSTART_WIN_PATH=""
+
+
+ask_user() {
+    echo "";
+    read -r -p "$1 (y|N)" choice
+    case "$choice" in
+      n|N)
+        echo "Abort!";
+        ;;
+      y|Y)
+        return 0;
+        ;;
+
+      *)
+        echo 'Response not valid';;
+    esac
+    exit 1;
+}
+
 
 if [ ! -f "$PROGPATH/.kick.yml" ]
 then
@@ -249,21 +283,45 @@ run_shell() {
    if [ `docker ps | grep "$CONTAINER_NAME\$" | wc -l` -gt 0 ]
    then
         echo "[kickstart.sh] Container '$CONTAINER_NAME' already running"
-        echo "Starting shell... (please press enter)"
-        echo "";
 
-        shellarg="/bin/bash"
-        if [ "$ARGUMENT" != "" ]
+        choice="s"
+        if [[ "$ARGUMENT" == "" ]]
         then
-            shellarg="kick $ARGUMENT"
-        fi;
+            read -r -p "Your choice: (S)hell, (r)estart, (a)bort?" choice
+        fi
 
-        docker exec $terminal --user user -e "DEV_TTYID=[SUB]" $CONTAINER_NAME $shellarg
+        case "$choice" in
+            a)
+                echo "Abort";
+                exit 0;
+                ;;
 
-        echo -e $COLOR_CYAN;
-        echo "<=== [kickstart.sh] Leaving container."
-        echo -e $COLOR_NC
-        exit 0;
+            r|R)
+                echo "Restarting container..."
+                docker kill $CONTAINER_NAME
+                run_container
+                exit 0;
+                ;;
+           s|S|*)
+                echo "Starting shell... (please press enter)"
+                echo "";
+
+                shellarg="/bin/bash"
+                if [ "$ARGUMENT" != "" ]
+                then
+                    shellarg="kick $ARGUMENT"
+                fi;
+
+                docker exec $terminal --user user -e "DEV_TTYID=[SUB]" $CONTAINER_NAME $shellarg
+
+                echo -e $COLOR_CYAN;
+                echo "<=== [kickstart.sh] Leaving container."
+                echo -e $COLOR_NC
+                exit 0;
+                ;;
+        esac
+
+
    fi
 
    echo "[kickstart.s] Another container is already running!"
@@ -301,22 +359,6 @@ run_shell() {
 }
 
 
-ask_user() {
-    echo "";
-    read -r -p "$1 (y|N)" choice
-    case "$choice" in
-      n|N)
-        echo "Abort!";
-        ;;
-      y|Y)
-        return 0;
-        ;;
-
-      *)
-        echo 'Response not valid';;
-    esac
-    exit 1;
-}
 
 _ci_build() {
 
@@ -374,7 +416,7 @@ run_container() {
         _NETWORKS=$(docker network ls | grep $_STACK_NETWORK_NAME | wc -l)
         echo nets: $_NETWORKS
         if [ $_NETWORKS -eq 0 ]; then
-            docker swarm init
+            docker swarm init || true
             docker network create --attachable -d overlay $_STACK_NETWORK_NAME
         fi;
 

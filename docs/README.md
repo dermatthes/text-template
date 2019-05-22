@@ -70,7 +70,7 @@ composer require text/template
 ```
 
 
-## Value injectionamp
+## Value injection
 
 Use the value Tag
 ```
