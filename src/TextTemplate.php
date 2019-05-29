@@ -157,11 +157,11 @@ class TextTemplate {
         for ($li=0; $li < count ($lines); $li++) {
             $lines[$li] = preg_replace_callback("/{$this->OCE}else(?<nestingLevel>[0-9]+){$this->CCE}/im",
                 function ($matches) use (&$nestingIndex, &$indexCounter, &$li) {
-                    return "{$this->OC}/if{$matches["nestingLevel"]}{$this->CC}{$this->OC}if{$matches["nestingLevel"]} ::NL_ELSE_FALSE";
+                    return "{$this->OC}/if{$matches["nestingLevel"]}{$this->CC}{$this->OC}if{$matches["nestingLevel"]} ::NL_ELSE_FALSE{$this->CC}";
                 },
                 $lines[$li]
             );
-            $lines[$li] = preg_replace_callback('/\{elseif(?<nestingLevel>[0-9]+)(?<params>.*)\}/im',
+            $lines[$li] = preg_replace_callback("/{$this->OCE}elseif(?<nestingLevel>[0-9]+)(?<params>.*){$this->CCE}/im",
                 function ($matches) use (&$nestingIndex, &$indexCounter, &$li) {
 
                     return "{$this->OC}/if{$matches["nestingLevel"]}{$this->CC}{$this->OC}if{$matches["nestingLevel"]} ::NL_ELSE_FALSE {$matches["params"]}{$this->CC}";
@@ -204,7 +204,7 @@ class TextTemplate {
 
         $lines = explode("\n", $input);
         for ($li=0; $li < count ($lines); $li++) {
-            $lines[$li] = preg_replace_callback("/{$this->OCE}(?!=)\s*(\/?)\s*([a-z0-9\_]+)(.*?)\{$this->CCE}/im",
+            $lines[$li] = preg_replace_callback("/{$this->OCE}(?!=)\s*(\/?)\s*([a-z0-9\_]+)(.*?){$this->CCE}/im",
                 function ($matches) use (&$nestingIndex, &$indexCounter, &$li, $blockTags) {
                     $slash = $matches[1];
                     $tag = $matches[2];
@@ -268,7 +268,7 @@ class TextTemplate {
         // And ending with newline by single line
         //
         // Caution: Lookahead at the end required to strip multiple lines!
-        $input = preg_replace("#\\n\h*({$this->OCE}(?!=)[^\\n{$this->CCE}]+?{$this->CCE})\h*\\n#m", "\$1\n", $input);
+        $input = preg_replace("#\\n\h*({$this->OCE}(?!=)[^\\n{$this->CC}]+?{$this->CCE})\h*\\n#m", "\$1\n", $input);
         $input = preg_replace("#{$this->CCE}\\h*\\n\h*({$this->OCE}(?!=))#m", "{$this->CC}\$1", $input);
         return $input;
     }
@@ -552,7 +552,7 @@ class TextTemplate {
     private function _parseBlock (&$context, $block, $softFail) {
         // (?!\{): Lookahead Regex: Don't touch double {{
         $bCommands = implode("|", array_keys($this->sections));
-        $result = preg_replace_callback("/({$this->OCE}(?!=)((?<bcommand>if|for|{$bCommands})(?<bnestingLevel>[0-9]+))(?<bcmdParam>.*?){$this->CCE}(?<bcontent>.*?)\n?{$this->OCE}\/\2{$this->CCE}|{$this->OCE}(?!=)(?<command>[a-z]+)\s*(?<cmdParam>.*?){$this->CCE}|{$this->OCE}\=(?<value>.+?){$this->CCE})/ism",
+        $result = preg_replace_callback("/({$this->OCE}(?!=)((?<bcommand>if|for|{$bCommands})(?<bnestingLevel>[0-9]+))(?<bcmdParam>.*?){$this->CCE}(?<bcontent>.*?)\\n?{$this->OCE}\/\\2{$this->CCE}|{$this->OCE}(?!=)(?<command>[a-z]+)\s*(?<cmdParam>.*?){$this->CCE}|{$this->OCE}\=(?<value>.+?){$this->CCE})/ism",
             function ($matches) use (&$context, $softFail) {
                 if (isset ($matches["value"]) && $matches["value"] != null) {
                     return $this->_parseValueOfTags($context, $matches["value"], $softFail);
