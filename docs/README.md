@@ -344,6 +344,17 @@ will return
 UndefinedVariable: someUndefinedName
 ```
 
+## Changing the tag-open and tag-close chars
+
+Sometimes `{tag}{\tag}` isn't suitable when parsting other template files. You can change the
+opening and closing chars with the function `setOpenCloseTagChars()`
+
+```php
+$textTemplate->setOpenCloseTagChars("{{", "}}");
+```
+
+The above example will listen to `{{tag}}{{/tag}}`.
+
 ## Limitations
 
 The logic-Expression-Parser won't handle logic connections (OR / AND) in conditions.

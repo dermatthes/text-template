@@ -70,6 +70,14 @@ class TextTemplate {
         $this->sections = self::$__DEFAULT_SECTIONS;
     }
 
+    public function setOpenCloseTagChars($open="{", $close="}")
+    {
+        $this->OC = $open;
+        $this->OCE = addslashes($open);
+        $this->CC = $close;
+        $this->CCE = addslashes($close);
+    }
+
     /**
      * Section mode.
      *
