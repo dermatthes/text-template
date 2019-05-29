@@ -397,6 +397,17 @@ run_container() {
         echo -e $COLOR_RED "OFFLINE MODE! Not pulling image from registy. " $COLOR_NC
     fi;
 
+    ## Mutliarch support
+    ##imageArchitecture=$( docker image inspect "$FROM_IMAGE" -f '{{.Architecture}}')
+    isArmImage=$(echo "$FROM_IMAGE" | grep "arm32v7") || true
+    isX86=$(uname -m | grep "x86") || true
+
+    if [ "$isX86" != "" ] && [ "$isArmImage" != '' ]
+    then
+        ask_user "You are trying to load arm32 image on x86 architecture. Enable multiarch/qemu?"
+        docker run --rm --privileged multiarch/qemu-user-static:register --reset --credential yes
+    fi
+
 	if [ "$KICKSTART_WIN_PATH" != "" ]
 	then
 		# For Windows users: Rewrite Path of bash to Windows path

@@ -51,6 +51,12 @@ class TextTemplate {
     private $mFilter = [];
     private $mFunctions = [];
 
+    private $OC = "{";
+    private $OCE = "\{";
+    private $CC = "}";
+    private $CCE = "\}";
+
+
     /**
      * @var callable[]
      */
@@ -149,16 +155,16 @@ class TextTemplate {
     public function _replaceElseIf ($input) {
         $lines = explode("\n", $input);
         for ($li=0; $li < count ($lines); $li++) {
-            $lines[$li] = preg_replace_callback('/\{else(?<nestingLevel>[0-9]+)\}/im',
+            $lines[$li] = preg_replace_callback("/{$this->OCE}else(?<nestingLevel>[0-9]+){$this->CCE}/im",
                 function ($matches) use (&$nestingIndex, &$indexCounter, &$li) {
-                    return "{/if{$matches["nestingLevel"]}}{if{$matches["nestingLevel"]} ::NL_ELSE_FALSE}";
+                    return "{$this->OC}/if{$matches["nestingLevel"]}{$this->CC}{$this->OC}if{$matches["nestingLevel"]} ::NL_ELSE_FALSE";
                 },
                 $lines[$li]
             );
             $lines[$li] = preg_replace_callback('/\{elseif(?<nestingLevel>[0-9]+)(?<params>.*)\}/im',
                 function ($matches) use (&$nestingIndex, &$indexCounter, &$li) {
 
-                    return "{/if{$matches["nestingLevel"]}}{if{$matches["nestingLevel"]} ::NL_ELSE_FALSE {$matches["params"]}}";
+                    return "{$this->OC}/if{$matches["nestingLevel"]}{$this->CC}{$this->OC}if{$matches["nestingLevel"]} ::NL_ELSE_FALSE {$matches["params"]}{$this->CC}";
                 },
                 $lines[$li]
             );
@@ -198,7 +204,7 @@ class TextTemplate {
 
         $lines = explode("\n", $input);
         for ($li=0; $li < count ($lines); $li++) {
-            $lines[$li] = preg_replace_callback('/\{(?!=)\s*(\/?)\s*([a-z0-9\_]+)(.*?)\}/im',
+            $lines[$li] = preg_replace_callback("/{$this->OCE}(?!=)\s*(\/?)\s*([a-z0-9\_]+)(.*?)\{$this->CCE}/im",
                 function ($matches) use (&$nestingIndex, &$indexCounter, &$li, $blockTags) {
                     $slash = $matches[1];
                     $tag = $matches[2];
@@ -210,21 +216,21 @@ class TextTemplate {
                         if (count ($nestingIndex["if"]) == 0)
                             throw new TemplateParsingException("Line {$li}: Nesting level does not match for closing tag: '{$matches[0]}'");
                         $curIndex = $nestingIndex["if"][count ($nestingIndex["if"])-1];
-                        $out =  "{" . $tag . $curIndex[0] . rtrim($rest) . "}";
+                        $out =  "{$this->OC}" . $tag . $curIndex[0] . rtrim($rest) . "{$this->CC}";
                         return $out;
                     }
                     if ($slash == "" && in_array($tag, $blockTags)) {
                         if ( ! isset ($nestingIndex[$tag]))
                             $nestingIndex[$tag] = [];
                         $nestingIndex[$tag][] = [$indexCounter, $li];
-                        $out =  "{" . $tag . $indexCounter . rtrim($rest) . "}";
+                        $out =  "{$this->OC}" . $tag . $indexCounter . rtrim($rest) . "{$this->CC}";
                         $indexCounter++;
 
                         return $out;
                     } else if ($slash == "/") {
                         if ( ! isset ($nestingIndex[$tag])) {
                             if ( ! isset ($this->sections[$tag]) && ! in_array($tag, ["if", "for"]))
-                                throw new TemplateParsingException("Line {$li}: No callback registred for section {{$tag}}{/{$tag}}");
+                                throw new TemplateParsingException("Line {$li}: No callback registred for section {$this->OC}{$tag}{$this->CC}{$this->OC}/{$tag}{$this->CC}");
                             throw new TemplateParsingException(
                                 "Line {$li}: Opening tag not found for closing tag: '{$matches[0]}'"
                             );
@@ -232,7 +238,7 @@ class TextTemplate {
                         if (count ($nestingIndex[$tag]) == 0)
                             throw new TemplateParsingException("Line {$li}: Nesting level does not match for closing tag: '{$matches[0]}'");
                         $curIndex = array_pop($nestingIndex[$tag]);
-                        return "{/" . $tag . $curIndex[0] . "}";
+                        return "{$this->OC}/" . $tag . $curIndex[0] . "{$this->CC}";
                     } else {
                         return $matches[0]; // ignore - is Function
                     }
@@ -250,7 +256,7 @@ class TextTemplate {
 
 
     private function _removeComments ($input) {
-        return preg_replace('/\{\#.*?\#\}/ism', "", $input);
+        return preg_replace("/{$this->OCE}\#.*?\#{$this->CCE}/ism", "", $input);
     }
 
 
@@ -262,8 +268,8 @@ class TextTemplate {
         // And ending with newline by single line
         //
         // Caution: Lookahead at the end required to strip multiple lines!
-        $input = preg_replace("#\\n\h*(\{(?!=)[^\\n}]+?\})\h*\\n#m", "\$1\n", $input);
-        $input = preg_replace("#\}\\h*\\n\h*(\{(?!=))#m", "}\$1", $input);
+        $input = preg_replace("#\\n\h*({$this->OCE}(?!=)[^\\n{$this->CCE}]+?{$this->CCE})\h*\\n#m", "\$1\n", $input);
+        $input = preg_replace("#{$this->CCE}\\h*\\n\h*({$this->OCE}(?!=))#m", "{$this->CC}\$1", $input);
         return $input;
     }
 
@@ -546,7 +552,7 @@ class TextTemplate {
     private function _parseBlock (&$context, $block, $softFail) {
         // (?!\{): Lookahead Regex: Don't touch double {{
         $bCommands = implode("|", array_keys($this->sections));
-        $result = preg_replace_callback('/(\{(?!=)((?<bcommand>if|for|' . $bCommands . ')(?<bnestingLevel>[0-9]+))(?<bcmdParam>.*?)\}(?<bcontent>.*?)\n?\{\/\2\}|\{(?!=)(?<command>[a-z]+)\s*(?<cmdParam>.*?)\}|\{\=(?<value>.+?)\})/ism',
+        $result = preg_replace_callback("/({$this->OCE}(?!=)((?<bcommand>if|for|{$bCommands})(?<bnestingLevel>[0-9]+))(?<bcmdParam>.*?){$this->CCE}(?<bcontent>.*?)\n?{$this->OCE}\/\2{$this->CCE}|{$this->OCE}(?!=)(?<command>[a-z]+)\s*(?<cmdParam>.*?){$this->CCE}|{$this->OCE}\=(?<value>.+?){$this->CCE})/ism",
             function ($matches) use (&$context, $softFail) {
                 if (isset ($matches["value"]) && $matches["value"] != null) {
                     return $this->_parseValueOfTags($context, $matches["value"], $softFail);
