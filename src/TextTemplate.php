@@ -40,7 +40,7 @@ require_once __DIR__."/buildInFunctions.inc.php";
 
 class TextTemplate {
 
-    const VERSION = "2.0.0";
+    const VERSION = "2.0.1";
 
 
     public static $__DEFAULT_FILTER = [];
