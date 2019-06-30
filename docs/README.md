@@ -199,7 +199,7 @@ Comment #}
 
 ### Adding Filters
 
-You can add custom filters or overwrite own filters.
+You can add custom filters or overwrite own filters. The default filter is `html` (htmlspecialchars).
 
 Adding a new Filter:
 
