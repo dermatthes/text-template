@@ -1,5 +1,6 @@
 # Text-Template (Single Class, IF, FOR, FILTERS)
 
+[![Actions Status](https://github.com/dermatthes/text-template/workflows/tests/badge.svg)](https://github.com/dermatthes/text-template/actions)
 [![Downloads this Month](https://img.shields.io/packagist/dm/text/template.svg)](https://packagist.org/packages/text/template)
 [<img src="https://travis-ci.org/dermatthes/text-template.svg">](https://travis-ci.org/dermatthes/text-template)
 [![Coverage Status](https://coveralls.io/repos/github/dermatthes/text-template/badge.svg?branch=master)](https://coveralls.io/github/dermatthes/text-template?branch=master)
