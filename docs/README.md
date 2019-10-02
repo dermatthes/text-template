@@ -231,6 +231,7 @@ Use this filter inside your template
 | fixedLength:<length>:<pad_char: | Pad / shrink the output to <length> characters |
 | inflect:tag | Convert to underline tag |
 | sanitize:hostname | Convert to hostname |
+| count           | Return count of array |
 
 ### Replacing the default-Filter
 
@@ -281,6 +282,9 @@ $textTemplate->addSection("sectionxy", function ($content, $params, $command, $c
 ```
 
 
+
+
+
 ### Stripping empty lines
 
 
@@ -291,6 +295,14 @@ line1
 
 line2
 {/strip_empty_lines}
+```
+
+### Counting a array
+
+```
+{trim > countElem}{= var | count}{/trim}
+{if countElem == "0" }
+{/if}
 ```
 
 
