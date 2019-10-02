@@ -1,10 +1,10 @@
 # Text-Template (Single Class, IF, FOR, FILTERS)
 
 [![Downloads this Month](https://img.shields.io/packagist/dm/text/template.svg)](https://packagist.org/packages/text/template)
+[![Latest Stable Version](https://poser.pugx.org/text/template/v/stable)](https://github.com/dermatthes/text-template/releases)
 [![Actions Status](https://github.com/dermatthes/text-template/workflows/tests/badge.svg)](https://github.com/dermatthes/text-template/actions)
 [<img src="https://travis-ci.org/dermatthes/text-template.svg">](https://travis-ci.org/dermatthes/text-template)
 [![Coverage Status](https://coveralls.io/repos/github/dermatthes/text-template/badge.svg?branch=master)](https://coveralls.io/github/dermatthes/text-template?branch=master)
-[![Latest Stable Version](https://poser.pugx.org/text/template/v/stable)](https://github.com/dermatthes/text-template/releases)
 [![Supports PHP 5.4+](https://raw.githubusercontent.com/xp-framework/web/master/static/php-5_4plus.png)](http://php.net/)
 [![Supports PHP 7.0+](https://raw.githubusercontent.com/xp-framework/web/master/static/php-7_0plus.png)](http://php.net/)
 [![Homepage](https://img.shields.io/badge/info-website-blue.svg)](http://text-template.pub.leuffen.de)
