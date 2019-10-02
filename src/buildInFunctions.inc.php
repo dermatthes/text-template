@@ -33,6 +33,9 @@ TextTemplate::$__DEFAULT_SECTIONS["print"] =  function ($content, $params, $comm
     return $content;
 };
 
+TextTemplate::$__DEFAULT_SECTIONS["trim"] =  function ($content, $params, $command, $context, $cmdParam) {
+    return trim($content);
+};
 
 TextTemplate::$__DEFAULT_SECTIONS["strip_empty_lines"] =  function ($content, $params, $command, $context, $cmdParam) {
     return rtrim (preg_replace("|\n+|m", "\n", $content));

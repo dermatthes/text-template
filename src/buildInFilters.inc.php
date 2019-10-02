@@ -41,3 +41,9 @@ TextTemplate::$__DEFAULT_FILTER["sanitize"] = function ($input, $type) {
             return "##ERR:sanitize:$type - unknown type: '$type'##";
     }
 };
+
+TextTemplate::$__DEFAULT_FILTER["count"] = function ($input) {
+    if (is_array($input))
+        return count ($input);
+    return 0;
+};
