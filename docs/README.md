@@ -70,10 +70,10 @@ I prefer and recommend using [composer](http://getcomposer.com):
 composer require text/template
 ```
 
-## Modify tag-start/end
+## Flexible tag-start/end
 
 This documentation refers to the default-tags: Having one bracket `{` as start and one `}` as
-end delmiter. If you want to change these, see: `TextTempate::setOpenCloseTagChars()`
+end delimiter. Of course, they are flexible: If you want to change these, see: `TextTempate::setOpenCloseTagChars()`
 
 ## Value injection
 
