@@ -162,8 +162,8 @@ Goodbye World
 You can register user-defined functions.
 
 ```php
-$template->addFunctampion("sayHello", 
-    function ($paramArr, $command, $context, $cmdParam) {
+$template->addFunction("sayHello", 
+    function ($paramArr, $command, $context, $cmdParam, $self) {
         return "Hello " . $paramArr["msg"];
     }
 );
@@ -281,7 +281,7 @@ Some Content
 To use sections you must just set the callback:
 
 ```php
-$textTemplate->addSection("sectionxy", function ($content, $params, $command, $context, $cmdParam) {
+$textTemplate->addSection("sectionxy", function ($content, $params, $command, $context, $cmdParam, $self) {
     return "Content to replace section content with";
 });
 ```

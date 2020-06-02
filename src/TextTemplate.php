@@ -505,7 +505,7 @@ class TextTemplate {
         try {
             $func = $this->sections[$command];
             $out = $func(
-                $content, $funcParams["paramArr"], $command, $context, $cmdParam
+                $content, $funcParams["paramArr"], $command, $context, $cmdParam, $this
             );
             if ($funcParams["retAs"] !== null) {
                 if ($funcParams["append"]) {
@@ -611,7 +611,7 @@ class TextTemplate {
                     try {
                         $func = $this->mFunctions[$command];
                         $out = $func(
-                            $funcParams["paramArr"], $command, $context, $cmdParam
+                            $funcParams["paramArr"], $command, $context, $cmdParam, $this
                         );
                         if ($funcParams["retAs"] !== null) {
                             if ($funcParams["append"]) {
