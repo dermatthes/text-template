@@ -21,4 +21,7 @@
 {if emptyVal}
 8: Some empty string
 {/if}
-9: Last text
+{if arrayVal|count > 2}
+9: Array has more than 2 items
+{/if}
+10: Last text
