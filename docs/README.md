@@ -134,7 +134,22 @@ Shortcut: Test if a variable is null:
 {/if}
 ```
 
-Limitation: Logical connections like OR / AND are not possible at the moment. Maybe in the future.
+Complex logical expressions can be made using && (and), || (or) and brackets.
+
+```
+{if someVarName && otherVarName}
+    someVarName and otherVarName are set!
+{/if}
+{if someVarName || otherVarName}
+    someVarName or otherVarName are set!
+{/if}
+{if someVarName || (otherVarName && anotherVarName)}
+    Condition is true!
+{/if}
+{if someVarName && !(otherVarName && anotherVarName)}
+    Condition is true!
+{/if}
+```
 
 ## Conditions (else)
 ```

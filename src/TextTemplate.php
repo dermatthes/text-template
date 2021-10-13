@@ -421,10 +421,138 @@ class TextTemplate {
     }
 
 
-    private function _runIf (&$context, $content, $cmdParam, $softFail, &$ifConditionDidMatch) {
-        //echo $cmdParam;
-        $doIf = false;
+    private function _compareValues($operand1, $operand2, $operator)
+    {
+        switch($operator) {
+            case "==":
+                return ($operand1 == $operand2);
+            case "!=":
+                return ($operand1 != $operand2);
+            case "<":
+                return ($operand1 < $operand2);
+            case ">":
+              return ($operand1 > $operand2);
+            default:
+              throw new TemplateParsingException("Unknown operator: '$operator'");
+        }
+    }
 
+
+    /**
+     * @param $cmdParam
+     * @param $matches
+     * @param $context
+     * @param $softFail
+     * @return bool|string
+     */
+    private function _evaluateCondition($expression, $context, $softFail)
+    {
+      if(!preg_match('/(([\"\']?.*?[\"\']?)\s*(==|<|>|!=)\s*([\"\']?.*[\"\']?)|((!?)\s*(.*)))/i', $expression, $matches)) {
+          throw new TemplateParsingException("Invalid expression: '$expression'");
+      }
+      if(count($matches) == 8) {
+          $comp1 = $this->_getItemValue(trim($matches[7]), $context, $softFail);
+          $operator = '==';
+          $comp2 = $matches[6] ? false : true; // ! prefix
+      } elseif(count($matches) == 5) {
+          $comp1 = $this->_getItemValue(trim($matches[2]), $context, $softFail);
+          $operator = trim($matches[3]);
+          $comp2 = $this->_getItemValue(trim($matches[4]), $context, $softFail);
+      } else {
+          throw new TemplateParsingException("Invalid expression: '$expression'");
+      }
+      return $this->_compareValues($comp1, $comp2, $operator);
+    }
+
+    private function _interpretExpressionValue(&$expressionComponents, &$index, $context, $softFail, $depth = 0) {
+        if($index >= count($expressionComponents)) {
+            throw new TemplateParsingException("Unexpected end of expression.");
+        }
+        $component = $expressionComponents[$index];
+        switch($component) {
+            case "&&":
+            case "||":
+            case ")":
+                throw new TemplateParsingException("Unexpected '$component' instead of value.");
+            case "(":
+                $index++;
+                return $this->_interpretExpression($expressionComponents, $index, $context, $softFail, $depth + 1);
+            case "!(":
+                $index++;
+                return !$this->_interpretExpression($expressionComponents, $index, $context, $softFail, $depth + 1);
+            default:
+                return $this->_evaluateCondition($component, $context, $softFail);
+        }
+    }
+
+    private function _interpretExpression(&$expressionComponents, &$index, $context, $softFail, $depth = 0) {
+        $value = null;
+        while($index < count($expressionComponents)) {
+            $component = $expressionComponents[$index];
+            switch($component) {
+                case "&&":
+                    if($value === null) {
+                        throw new TemplateParsingException("Unexpected '$component'.");
+                    }
+                    $index++;
+                    $value = $this->_interpretExpressionValue($expressionComponents, $index, $context, $softFail, $depth) && $value;
+                    break;
+                case "||":
+                    if($value === null) {
+                        throw new TemplateParsingException("Unexpected '$component'.");
+                    }
+                    $index++;
+                    $value = $this->_interpretExpressionValue($expressionComponents, $index, $context, $softFail, $depth) || $value;
+                    break;
+                case ")":
+                    if($depth == 0) {
+                        throw new TemplateParsingException("Unexpected '$component'. No matching opening '('.");
+                    }
+                    return $value;
+                default:
+                    if($value !== null) {
+                        throw new TemplateParsingException("Unexpected '$component'.");
+                    }
+                    $value = $this->_interpretExpressionValue($expressionComponents, $index, $context, $softFail, $depth);
+            }
+            $index++;
+        }
+        if($depth != 0) {
+            throw new TemplateParsingException("Unmatched '('.");
+        }
+        return $value;
+    }
+
+
+    /**
+     * @param $cmdParam
+     * @param $matches
+     * @param $context
+     * @param $softFail
+     * @return bool|string
+     */
+    private function _evaluateConditionExpression($expression, $context, $softFail)
+    {
+        $expression = preg_replace("/\s+/", " ", $expression);
+        $expression = preg_replace("/!\s+\(/", "!(", $expression);
+        // separators: &&, ||, !(, (, )
+        $expressionComponents = preg_split(
+            "/\s*(&&|\|\||!\(|\(|\))\s*/",
+            $expression,
+            0,
+            PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE
+        );
+        $index = 0;
+        try {
+            return $this->_interpretExpression($expressionComponents, $index, $context, $softFail);
+        } catch(TemplateParsingException $e) {
+            throw new TemplateParsingException("Error parsing expression '$expression': " . $e->getMessage(), 0, $e);
+        }
+    }
+
+
+    private function _runIf (&$context, $content, $cmdParam, $softFail, &$ifConditionDidMatch)
+    {
         $cmdParam = trim ($cmdParam);
         //echo "\n+ $cmdParam " . strpos($cmdParam, "::NL_ELSE_FALSE");
         // Handle {else}{elseif} constructions
@@ -446,38 +574,7 @@ class TextTemplate {
             $ifConditionDidMatch = false;
         }
 
-        if ( ! preg_match('/(([\"\']?.*?[\"\']?)\s*(==|<|>|!=)\s*([\"\']?.*[\"\']?)|((!?)\s*(.*)))/i', $cmdParam, $matches)) {
-            return "!! Invalid command sequence: '$cmdParam' !!";
-        }
-        if(count($matches) == 8) {
-          $comp1 = $this->_getItemValue(trim($matches[7]), $context, $softFail);
-          $operator = '==';
-          $comp2 = $matches[6] ? FALSE : TRUE; // ! prefix
-        } elseif(count($matches) == 5){
-          $comp1 = $this->_getItemValue(trim($matches[2]), $context, $softFail);
-          $operator = trim($matches[3]);
-          $comp2 = $this->_getItemValue(trim($matches[4]), $context, $softFail);
-        } else {
-          return "!! Invalid command sequence: '$cmdParam' !!";
-        }
-
-        switch ($operator) {
-            case "==":
-                $doIf = ($comp1 == $comp2);
-                break;
-            case "!=":
-                $doIf = ($comp1 != $comp2);
-                break;
-            case "<":
-                $doIf = ($comp1 < $comp2);
-                break;
-            case ">":
-                $doIf = ($comp1 > $comp2);
-                break;
-
-        }
-
-        if ( ! $doIf) {
+        if ( ! $this->_evaluateConditionExpression($cmdParam, $context, $softFail)) {
             return "";
         }
 
@@ -679,6 +776,5 @@ class TextTemplate {
 
         return $result;
     }
-
 
 }

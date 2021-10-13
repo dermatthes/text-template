@@ -1,0 +1,106 @@
+{if (yes)}
+(1)=1
+{/if}
+{if (no)}
+(0)=0
+{/if}
+{if !(yes)}
+!(1)=0
+{/if}
+{if !(no)}
+!(0)=1
+{/if}
+
+
+{if yes && yes}
+1&1=1
+{/if}
+{if yes && no}
+1&0=0
+{/if}
+{if no && yes}
+0&1=0
+{/if}
+{if no && no}
+0&0=0
+{/if}
+
+
+{if yes || yes}
+1|1=1
+{/if}
+{if yes || no}
+1|0=1
+{/if}
+{if no || yes}
+0|1=1
+{/if}
+{if no || no}
+0|0=0
+{/if}
+
+
+{if yes && no || yes}
+1&0|1=1
+{/if}
+{if yes && no || no}
+1&0|0=0
+{/if}
+{if no && yes || no}
+0&1|0=0
+{/if}
+{if no && yes || yes}
+0&1|1=1
+{/if}
+
+
+{if yes && (no || yes)}
+1&(0|1)=1
+{/if}
+{if yes && (no || no)}
+1&(0|0)=0
+{/if}
+
+
+{if no || (yes && yes)}
+0|(1&1)=1
+{/if}
+{if no || (no && yes)}
+0|(0&1)=0
+{/if}
+
+
+{if yes && !(no || yes)}
+1&!(0|1)=0
+{/if}
+{if yes && !(no || no)}
+1&!(0|0)=1
+{/if}
+
+
+{if no || !(yes && yes)}
+0|!(1&1)=0
+{/if}
+{if no || !(no && yes)}
+0|!(0&1)=1
+{/if}
+
+
+{if (yes)}
+A
+{/if}
+{if (yes)}
+B
+{/if}
+{if (yes && yes)}
+C
+{/if}
+{if ((yes && yes))}
+D
+{/if}
+{if (((yes) && (yes)))}
+E
+{/if}
+{if (((no) && (yes)) || ((yes) && (yes)))}
+F
+{/if}
