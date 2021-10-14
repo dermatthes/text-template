@@ -151,6 +151,39 @@ Complex logical expressions can be made using && (and), || (or) and brackets.
 {/if}
 ```
 
+You can use filters on values used in comparsions.
+
+```
+{if someArray|count > otherArray|count}
+    someArray has more items than otherArray
+{/if}
+```
+
+### Adding Operators
+
+You can add custom operators for use in conditions.
+
+Adding a new Operator:
+
+```php
+$tt->addOperator("contains",
+    function ($operand1, $operand2) {
+        return strpos($operand1, $operand2) !== false; 
+    }
+);
+```
+
+### Predefined Operators
+
+| Operator       | Description                                |
+|----------------|--------------------------------------------|
+| ==             | Equal                                      |
+| !=             | Not equal                                  |
+| \>             | Greater than                               |
+| <              | Less than                                  |
+| >=             | Greater than or equal                      |
+| <=             | Less than or equal                         |
+
 ## Conditions (else)
 ```
 {if someVarName == "SomeValue"}
@@ -385,10 +418,6 @@ $textTemplate->setOpenCloseTagChars("{{", "}}");
 ```
 
 The above example will listen to `{{tag}}{{/tag}}`.
-
-## Limitations
-
-The logic-Expression-Parser won't handle logic connections (OR / AND) in conditions.
 
 ## Benchmark
 

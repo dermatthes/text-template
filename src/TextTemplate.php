@@ -36,6 +36,7 @@ namespace Leuffen\TextTemplate;
 // Require only when Class is first loaded by classloader
 require_once __DIR__."/buildInFilters.inc.php";
 require_once __DIR__."/buildInFunctions.inc.php";
+require_once __DIR__."/buildInOperators.inc.php";
 
 
 class TextTemplate {
@@ -45,11 +46,13 @@ class TextTemplate {
 
     public static $__DEFAULT_FILTER = [];
     public static $__DEFAULT_FUNCTION = [];
+    public static $__DEFAULT_OPERATOR = [];
     public static $__DEFAULT_SECTIONS = [];
 
     private $mTemplateText;
     private $mFilter = [];
     private $mFunctions = [];
+    private $mOperators = [];
 
     private $OC = "{";
     private $OCE = "\{";
@@ -67,6 +70,7 @@ class TextTemplate {
         $this->mTemplateText = $text;
         $this->mFilter = self::$__DEFAULT_FILTER;
         $this->mFunctions = self::$__DEFAULT_FUNCTION;
+        $this->mOperators = self::$__DEFAULT_OPERATOR;
         $this->sections = self::$__DEFAULT_SECTIONS;
     }
 
@@ -136,6 +140,22 @@ class TextTemplate {
         $this->mFunctions[$functionName] = $callback;
         return $this;
     }
+
+
+    /**
+     * Register a operator you can use in conditions
+     *
+     *
+     * @param          $operator
+     * @param callable $callback
+     *
+     * @return $this
+     */
+    public function addOperator ($operator, callable $callback) {
+        $this->mOperators[$operator] = $callback;
+        return $this;
+    }
+
 
     public function addPlugin (TextTemplatePlugin $plugin)
     {
@@ -343,29 +363,44 @@ class TextTemplate {
     }
 
 
-    private function _parseValueOfTags ($context, $match, $softFail) {
-        $chain = explode("|", $match);
+    private function _parseItemChain ($item) {
+        $chain = explode("|", $item);
         for ($i=0; $i<count ($chain); $i++)
             $chain[$i] = trim ($chain[$i]);
+        return $chain;
+    }
 
-        if ( ! in_array("raw", $chain))
-            $chain[] = "_DEFAULT_";
 
+    private function _getItemValueWithFilters ($context, $item, $softFail) {
+        $chain = $this->_parseItemChain($item);
         $varName = trim (array_shift($chain));
 
         if ($varName === "__CONTEXT__") {
             $value = "\n----- __CONTEXT__ -----\n" . var_export($context, true) . "\n----- / __CONTEXT__ -----\n";
         } else {
-            $value = $this->_getValueByName($context, $varName, $softFail);
+            $value = $this->_getItemValue($context, $varName, $softFail);
         }
 
         foreach ($chain as $curName) {
+        echo json_encode($value) ."\n";
             $value = $this->_applyFilter($curName, $value);
         }
+        echo json_encode($value) ."\n";
 
         return $value;
     }
 
+
+    private function _parseValueOfTags ($context, $item, $softFail) {
+        $value = $this->_getItemValueWithFilters($context, $item, $softFail);
+
+        $chain = $this->_parseItemChain($item);
+        if ( ! in_array("raw", $chain)) {
+          $value = $this->_applyFilter("_DEFAULT_", $value);
+        }
+
+        return $value;
+    }
 
 
     private function _runFor (&$context, $content, $cmdParam, $softFail) {
@@ -405,7 +440,7 @@ class TextTemplate {
     }
 
 
-    private function _getItemValue ($compName, $context, $softFail) {
+    private function _getItemValue ($context, $compName, $softFail) {
         if (preg_match ('/^("|\')(.*?)\1$/i', $compName, $matches))
             return $matches[2]; // string Value
         if (is_numeric($compName)) {
@@ -423,18 +458,10 @@ class TextTemplate {
 
     private function _compareValues($operand1, $operand2, $operator)
     {
-        switch($operator) {
-            case "==":
-                return ($operand1 == $operand2);
-            case "!=":
-                return ($operand1 != $operand2);
-            case "<":
-                return ($operand1 < $operand2);
-            case ">":
-              return ($operand1 > $operand2);
-            default:
-              throw new TemplateParsingException("Unknown operator: '$operator'");
+        if(!isset($this->mOperators[$operator])) {
+            throw new TemplateParsingException("Unknown operator: '$operator'");
         }
+        return $this->mOperators[$operator]($operand1, $operand2);
     }
 
 
@@ -445,26 +472,28 @@ class TextTemplate {
      * @param $softFail
      * @return bool|string
      */
-    private function _evaluateCondition($expression, $context, $softFail)
+    private function _evaluateCondition($context, $expression, $softFail)
     {
-      if(!preg_match('/(([\"\']?.*?[\"\']?)\s*(==|<|>|!=)\s*([\"\']?.*[\"\']?)|((!?)\s*(.*)))/i', $expression, $matches)) {
+      $operatorsRegExp = implode("|", array_filter(array_keys($this->mOperators), "preg_quote"));
+
+      if(!preg_match('/(([\"\']?.*?[\"\']?)\s*(' . $operatorsRegExp .')\s*([\"\']?.*[\"\']?)|((!?)\s*(.*)))/i', $expression, $matches)) {
           throw new TemplateParsingException("Invalid expression: '$expression'");
       }
       if(count($matches) == 8) {
-          $comp1 = $this->_getItemValue(trim($matches[7]), $context, $softFail);
+          $comp1 = $this->_getItemValueWithFilters($context, trim($matches[7]), $softFail);
           $operator = '==';
           $comp2 = $matches[6] ? false : true; // ! prefix
       } elseif(count($matches) == 5) {
-          $comp1 = $this->_getItemValue(trim($matches[2]), $context, $softFail);
+          $comp1 = $this->_getItemValueWithFilters($context, trim($matches[2]), $softFail);
           $operator = trim($matches[3]);
-          $comp2 = $this->_getItemValue(trim($matches[4]), $context, $softFail);
+          $comp2 = $this->_getItemValueWithFilters($context, trim($matches[4]), $softFail);
       } else {
           throw new TemplateParsingException("Invalid expression: '$expression'");
       }
       return $this->_compareValues($comp1, $comp2, $operator);
     }
 
-    private function _interpretExpressionValue(&$expressionComponents, &$index, $context, $softFail, $depth = 0) {
+    private function _interpretExpressionValue($context, &$expressionComponents, &$index, $softFail, $depth = 0) {
         if($index >= count($expressionComponents)) {
             throw new TemplateParsingException("Unexpected end of expression.");
         }
@@ -476,16 +505,16 @@ class TextTemplate {
                 throw new TemplateParsingException("Unexpected '$component' instead of value.");
             case "(":
                 $index++;
-                return $this->_interpretExpression($expressionComponents, $index, $context, $softFail, $depth + 1);
+                return $this->_interpretExpression($context, $expressionComponents, $index,  $softFail, $depth + 1);
             case "!(":
                 $index++;
-                return !$this->_interpretExpression($expressionComponents, $index, $context, $softFail, $depth + 1);
+                return !$this->_interpretExpression($context, $expressionComponents, $index,  $softFail, $depth + 1);
             default:
-                return $this->_evaluateCondition($component, $context, $softFail);
+                return $this->_evaluateCondition($context, $component, $softFail);
         }
     }
 
-    private function _interpretExpression(&$expressionComponents, &$index, $context, $softFail, $depth = 0) {
+    private function _interpretExpression($context, &$expressionComponents, &$index, $softFail, $depth = 0) {
         $value = null;
         while($index < count($expressionComponents)) {
             $component = $expressionComponents[$index];
@@ -495,14 +524,14 @@ class TextTemplate {
                         throw new TemplateParsingException("Unexpected '$component'.");
                     }
                     $index++;
-                    $value = $this->_interpretExpressionValue($expressionComponents, $index, $context, $softFail, $depth) && $value;
+                    $value = $this->_interpretExpressionValue($context, $expressionComponents, $index, $softFail, $depth) && $value;
                     break;
                 case "||":
                     if($value === null) {
                         throw new TemplateParsingException("Unexpected '$component'.");
                     }
                     $index++;
-                    $value = $this->_interpretExpressionValue($expressionComponents, $index, $context, $softFail, $depth) || $value;
+                    $value = $this->_interpretExpressionValue($context, $expressionComponents, $index, $softFail, $depth) || $value;
                     break;
                 case ")":
                     if($depth == 0) {
@@ -513,7 +542,7 @@ class TextTemplate {
                     if($value !== null) {
                         throw new TemplateParsingException("Unexpected '$component'.");
                     }
-                    $value = $this->_interpretExpressionValue($expressionComponents, $index, $context, $softFail, $depth);
+                    $value = $this->_interpretExpressionValue($context, $expressionComponents, $index, $softFail, $depth);
             }
             $index++;
         }
@@ -531,7 +560,7 @@ class TextTemplate {
      * @param $softFail
      * @return bool|string
      */
-    private function _evaluateConditionExpression($expression, $context, $softFail)
+    private function _evaluateConditionExpression($context, $expression, $softFail)
     {
         $expression = preg_replace("/\s+/", " ", $expression);
         $expression = preg_replace("/!\s+\(/", "!(", $expression);
@@ -544,7 +573,7 @@ class TextTemplate {
         );
         $index = 0;
         try {
-            return $this->_interpretExpression($expressionComponents, $index, $context, $softFail);
+            return $this->_interpretExpression($context,$expressionComponents, $index, $softFail);
         } catch(TemplateParsingException $e) {
             throw new TemplateParsingException("Error parsing expression '$expression': " . $e->getMessage(), 0, $e);
         }
@@ -574,7 +603,7 @@ class TextTemplate {
             $ifConditionDidMatch = false;
         }
 
-        if ( ! $this->_evaluateConditionExpression($cmdParam, $context, $softFail)) {
+        if ( ! $this->_evaluateConditionExpression($context, $cmdParam, $softFail)) {
             return "";
         }
 
@@ -631,7 +660,7 @@ class TextTemplate {
     {
         $paramArr = [];
         $cmdParamRest = preg_replace_callback('/(?<name>[a-z0-9_]+)\s*=\s*(?<sval>((\"|\')(.*?)\4)|[a-z0-9\.\_]+)/i', function ($matches) use(&$paramArr, &$context, $softFail) {
-            $paramArr[$matches["name"]] = $this->_getItemValue($matches["sval"], $context, $softFail);
+            $paramArr[$matches["name"]] = $this->_getItemValue($context, $matches["sval"], $softFail);
         }, $cmdParam);
 
         $retAs = null;
@@ -660,7 +689,7 @@ class TextTemplate {
         $result = preg_replace_callback("/({$this->OCE}(?!=)((?<bcommand>if|for|{$bCommands})(?<bnestingLevel>[0-9]+))(?<bcmdParam>.*?){$this->CCE}(?<bcontent>.*?)\\n?{$this->OCE}\/\\2{$this->CCE}|{$this->OCE}(?!=)(?<command>[a-z]+)\s*(?<cmdParam>.*?){$this->CCE}|{$this->OCE}\=(?<value>.+?){$this->CCE})/ism",
             function ($matches) use (&$context, $softFail) {
                 if (isset ($matches["value"]) && $matches["value"] != null) {
-                    return $this->_parseValueOfTags($context, $matches["value"], $softFail);
+                    return $this-> _parseValueOfTags($context, $matches["value"], $softFail);
                 } else if (isset ($matches["bcommand"]) && $matches["bcommand"] != null) {
 
                     // Block-Commands
