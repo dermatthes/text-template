@@ -382,10 +382,10 @@ class TextTemplate {
         }
 
         foreach ($chain as $curName) {
-        echo json_encode($value) ."\n";
+            //echo json_encode($value) ."\n";
             $value = $this->_applyFilter($curName, $value);
         }
-        echo json_encode($value) ."\n";
+        //echo json_encode($value) ."\n";
 
         return $value;
     }
