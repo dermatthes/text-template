@@ -45,9 +45,15 @@ $dirs = glob(__DIR__ . "/unit/tpls/*");
 $tt = new TextTemplate();
 foreach ($dirs as $dir) {
     echo "\nTesting $dir...";
+
+    ob_start();
     $tt->loadTemplate(file_get_contents($dir . "/_in.txt"));
     $data = require ($dir . "/_in.php");
     $out = $tt->apply($data);
+    $output = ob_get_contents();
+    ob_end_flush();
+    if ($output !== "")
+        throw new \Exception("Output was generated during tests: '$output'");
     Assert::equal(file_get_contents($dir . "/out.txt"), $out, "Error in check: {$dir}");
 }
 
