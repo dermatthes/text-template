@@ -9,10 +9,10 @@
 
 namespace Leuffen\TextTemplate;
 
-TextTemplate::$__DEFAULT_FILTER["_DEFAULT_"] = function ($input) { return 
+TextTemplate::$__DEFAULT_FILTER["_DEFAULT_"] = function ($input) {  
     if ($input === null)
         return "null";
-    htmlspecialchars($input); 
+    return htmlspecialchars($input); 
 };
 
 // Raw is only a pseudo-filter. If it is not in the chain of filters, __DEFAULT__ will be appended to the filter
