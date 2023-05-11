@@ -9,10 +9,18 @@
 
 namespace Leuffen\TextTemplate;
 
-TextTemplate::$__DEFAULT_FILTER["_DEFAULT_"] = function ($input) { return htmlspecialchars($input); };
+TextTemplate::$__DEFAULT_FILTER["_DEFAULT_"] = function ($input) { return 
+    if ($input === null)
+        return "null";
+    htmlspecialchars($input); 
+};
 
 // Raw is only a pseudo-filter. If it is not in the chain of filters, __DEFAULT__ will be appended to the filter
-TextTemplate::$__DEFAULT_FILTER["html"] = function ($input) { return htmlspecialchars($input); };
+TextTemplate::$__DEFAULT_FILTER["html"] = function ($input) {
+    if ($input === null)
+        return "null";
+    return htmlspecialchars($input); 
+};
 TextTemplate::$__DEFAULT_FILTER["raw"] = function ($input) { return $input; };
 TextTemplate::$__DEFAULT_FILTER["singleLine"] = function ($input) { return str_replace("\n", " ", $input); };
 TextTemplate::$__DEFAULT_FILTER["inivalue"] = function ($input) { return addslashes(str_replace("\n", " ", $input)); };
