@@ -12,6 +12,8 @@ namespace Leuffen\TextTemplate;
 TextTemplate::$__DEFAULT_FILTER["_DEFAULT_"] = function ($input) {  
     if ($input === null)
         return "null";
+    if (is_array($input))
+        return "##ERR:filter:html - input is array##";
     return htmlspecialchars($input); 
 };
 
@@ -19,6 +21,8 @@ TextTemplate::$__DEFAULT_FILTER["_DEFAULT_"] = function ($input) {
 TextTemplate::$__DEFAULT_FILTER["html"] = function ($input) {
     if ($input === null)
         return "null";
+    if (is_array($input))
+        return "##ERR:filter:html - input is array##";
     return htmlspecialchars($input); 
 };
 TextTemplate::$__DEFAULT_FILTER["raw"] = function ($input) { return $input; };
