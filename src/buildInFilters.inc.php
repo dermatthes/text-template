@@ -14,7 +14,7 @@ TextTemplate::$__DEFAULT_FILTER["_DEFAULT_"] = function ($input) {
         return "null";
     if (is_array($input))
         return "##ERR:filter:html - input is array##";
-    return htmlspecialchars($input); 
+    return htmlspecialchars((string)$input); 
 };
 
 // Raw is only a pseudo-filter. If it is not in the chain of filters, __DEFAULT__ will be appended to the filter
@@ -23,7 +23,7 @@ TextTemplate::$__DEFAULT_FILTER["html"] = function ($input) {
         return "null";
     if (is_array($input))
         return "##ERR:filter:html - input is array##";
-    return htmlspecialchars($input); 
+    return htmlspecialchars((string)$input); 
 };
 TextTemplate::$__DEFAULT_FILTER["raw"] = function ($input) { return $input; };
 TextTemplate::$__DEFAULT_FILTER["singleLine"] = function ($input) { return str_replace("\n", " ", $input); };
