@@ -65,13 +65,24 @@ class TextTemplate {
      */
     private $sections = [];
 
-    public function __construct ($text="") {
+    /**
+     * @var bool
+     */
+    private $castNullIntoString;
+
+
+    /**
+     * @param string $text
+     * @param bool $castNullIntoString
+     */
+    public function __construct ($text="", $castNullIntoString=false) {
 
         $this->mTemplateText = $text;
         $this->mFilter = self::$__DEFAULT_FILTER;
         $this->mFunctions = self::$__DEFAULT_FUNCTION;
         $this->mOperators = self::$__DEFAULT_OPERATOR;
         $this->sections = self::$__DEFAULT_SECTIONS;
+        $this->castNullIntoString = $castNullIntoString;
     }
 
     public function setOpenCloseTagChars($open="{", $close="}")
@@ -393,6 +404,13 @@ class TextTemplate {
 
     private function _parseValueOfTags ($context, $item, $softFail) {
         $value = $this->_getItemValueWithFilters($context, $item, $softFail);
+        if ($value === null) {
+            if ( ! $this->castNullIntoString) {
+                $item = trim($item);
+                throw new TemplateParsingException("Value for item '{$item}' must not be null!");
+            }
+            $value = "";
+        }
 
         $chain = $this->_parseItemChain($item);
         if ( ! in_array("raw", $chain)) {
